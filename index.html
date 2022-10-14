@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charts for BenchmarkDotNet</title>
+
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.2.2/darkly/bootstrap.min.css"
+        integrity="sha512-8RiGzgobZQmqqqJYja5KJzl9RHkThtwqP1wkqvcbbbHNeMXJjTaBOR+6OeuoxHhuDN5h/VlgVEjD7mJu6KNQXA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.2.2/slate/bootstrap.min.css"
+        integrity="sha512-1pL5JraDFnKQpIwmTl0kunghVQj0wSv82iT4zHeP32BpkJuvLAgR5kAhGbwXUmAzYOtVyDfzhpbwk5vIK+uIhQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.2/css/bootstrap.min.css"
+        integrity="sha512-CpIKUSyh9QX2+zSdfGP+eWLx23C8Dj9/XmHjZY2uDtfkdLGo0uY12jgcnkX9vXOgYajEKb/jiw67EYm+kBf+6g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"
+        integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <style>
+        body {
+            font-size: 0.8rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                color-scheme: dark !important;
+            }
+
+            body {
+                background-color: var(--bs-dark);
+                color: var(--bs-light);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid py-2">
+        <main class="mb-5">
+            <div class="row">
+                <div class="col text-center">
+                    <h1>Charts for BenchmarkDotNet</h1>
+                    <p class="lead">Paste your console results below:</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col mb-5">
+                    <textarea name="" id="resultsInput" rows="10" class="w-100 font-monospace text-nowrap">
+|               Method | NumberOfValues |       Mean |     Error |    StdDev |
+|--------------------- |--------------- |-----------:|----------:|----------:|
+|  Int32ValuesXmlAsync |             64 | 1,322.7 us |  66.86 us |  44.22 us |
+| Int32ValuesJsonAsync |             64 |   781.4 us | 137.00 us |  90.62 us |
+| StringValuesXmlAsync |             64 | 1,107.1 us |  61.36 us |  40.59 us |
+|  Int32ValuesXmlAsync |            512 | 4,687.0 us | 343.05 us | 226.90 us |
+| Int32ValuesJsonAsync |            512 |   941.3 us |  77.45 us |  51.23 us |
+| StringValuesXmlAsync |            512 | 3,765.8 us | 359.93 us | 238.07 us |                        
+                </textarea>
+                    <div class="text-center">
+                        <small>This information does not leave your browser.</small>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-10 offset-1">
+                    <div class="row">
+                        <div class="col">
+                            <label for="rangeInput" class="form-label">Chart Size</label>
+                            <input type="range" id="rangeInput" min="0" max="100" value="100" class="form-range">
+                        </div>
+                        <div class="col">
+                            <label for="customRange1" class="form-label">Style</label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="flexRadioDefault"
+                                        id="flexRadioDefault1">
+                                    <label class="form-check-label" for="flexRadioDefault1">
+                                        Dark
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="flexRadioDefault"
+                                        id="flexRadioDefault2" checked>
+                                    <label class="form-check-label" for="flexRadioDefault2">
+                                        Light
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div id="chartWrapper" class="mx-auto">
+                        <canvas id="myChart" width="400px" height="400px"></canvas>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <button id="copyToClipboardButton" class="btn btn-primary mb-2">Copy to Clipboard</button>
+                        <button id="downloadButton" class="btn btn-primary mb-2">Download as PNG</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer>
+            <p class="text-center">
+                Powered by <a href="https://www.chartjs.org/" target="_blank">Chart.js</a><br>
+                Made with ☕&❤️ by <a href="https://github.com/yv989c" target="_blank">yv989c</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        const chartCanvas = document.getElementById('myChart');
+        const chartWrapper = document.getElementById('chartWrapper');
+        document.getElementById('rangeInput').addEventListener('input', e => {
+            e.target.title = event.target.value + '%';
+            chartWrapper.style.width = e.target.value + '%';
+        });
+
+        document.getElementById('copyToClipboardButton').addEventListener('click', e => {
+            chartCanvas.toBlob(blob => {
+                const item = new ClipboardItem({ 'image/png': blob });
+                navigator.clipboard.write([item]);
+            });
+        });
+
+        document.getElementById('downloadButton').addEventListener('click', e => {
+            var link = document.createElement('a');
+            link.download = 'chart.png';
+            link.href = chartCanvas.toDataURL();
+            link.click();
+        });
+    </script>
+
+    <script>
+        console.log(document.body.style.colorScheme);
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const gridLinesColor = Chart.defaults.color;//'#dee2e6';
+        // console.log(Chart.defaults.borderColor);
+        //  Chart.defaults.borderColor='#dee2e6';
+        Chart.defaults.borderColor = '#202020';//404040 //20202020
+        const myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['64, 1', '512, 1'],
+                datasets: [{
+                    label: 'Int32ValuesXmlAsync',
+                    data: [1322.7, 4687.0],
+                    backgroundColor: '#f94144',
+                    // borderColor: Chart.helpers.color('red').lighten(0.2),
+                    // borderColor: function (context, options) {
+                    //     const color = options.color; // resolve the value of another scriptable option: 'red', 'blue' or 'green'
+                    //     console.log(color);
+                    //     return Chart.helpers.color(color).lighten(0.2);
+                    // },
+                    // backgroundColor: [
+                    //     'rgba(255, 99, 132, 0.2)',
+                    //     'rgba(54, 162, 235, 0.2)',
+                    //     'rgba(255, 159, 64, 0.2)'
+                    // ],
+                    // borderColor: [
+                    //     'rgba(255, 99, 132, 1)',
+                    //     'rgba(54, 162, 235, 1)',
+                    //     'rgba(255, 206, 86, 1)',
+                    // ],
+                    borderWidth: 1
+                },
+                {
+                    label: 'Int32ValuesJsonAsync',
+                    data: [781.4, 941.3],
+                    backgroundColor: '#f3722c',
+                    // backgroundColor: [
+                    //     'rgba(255, 99, 132, 0.2)',
+                    //     'rgba(54, 162, 235, 0.2)',
+                    //     'rgba(255, 159, 64, 0.2)'
+                    // ],
+                    // borderColor: [
+                    //     'rgba(255, 99, 132, 1)',
+                    //     'rgba(54, 162, 235, 1)',
+                    //     'rgba(255, 206, 86, 1)',
+                    // ],
+                    borderWidth: 1
+                },
+                {
+                    label: 'StringValuesXmlAsync',
+                    data: [1107.1, 3765.8],
+                    backgroundColor: '#f8961e',
+                    // backgroundColor: [
+                    //     'rgba(255, 99, 132, 0.2)',
+                    //     'rgba(54, 162, 235, 0.2)',
+                    //     'rgba(255, 159, 64, 0.2)'
+                    // ],
+                    // borderColor: [
+                    //     'rgba(255, 99, 132, 1)',
+                    //     'rgba(54, 162, 235, 1)',
+                    //     'rgba(255, 206, 86, 1)',
+                    // ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                plugins: {
+                    subtitle: {
+                        display: true,
+                        text: 'Chart by chartbenchmark.net',
+                        position: 'right',
+                        align: 'center',
+                        color: '#555',
+                        fullSize: false
+                    }
+                },
+                scales: {
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Microseconds'
+                        },
+                        ticks1: {
+                            major: {
+                                enabled: false
+                            }
+                        },
+                        grid1: {
+                            color: gridLinesColor,
+                            borderColor: gridLinesColor
+                        }
+                        // beginAtZero: true,
+                        // color: '#000000'
+                        // ticks: {
+                        //     callback: function (value, index, ticks) {
+                        //         return `${Chart.helpers.formatNumber(value)} us`;
+                        //     }
+                        // }
+                        // type: 'logarithmic'
+
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Category, Other Category'
+                        }
+                    }
+                    // myScale: {
+                    //     type: 'logarithmic',
+                    //     position: 'right', // `axis` is determined by the position as `'y'`
+                    // }
+                }
+            }
+        });
+        /*
+        |               Method | NumberOfValues |       Mean |     Error |    StdDev |
+        |--------------------- |--------------- |-----------:|----------:|----------:|
+        |  Int32ValuesXmlAsync |             64 | 1,322.7 us |  66.86 us |  44.22 us |
+        | Int32ValuesJsonAsync |             64 |   781.4 us | 137.00 us |  90.62 us |
+        | StringValuesXmlAsync |             64 | 1,107.1 us |  61.36 us |  40.59 us |
+        |  Int32ValuesXmlAsync |            512 | 4,687.0 us | 343.05 us | 226.90 us |
+        | Int32ValuesJsonAsync |            512 |   941.3 us |  77.45 us |  51.23 us |
+        | StringValuesXmlAsync |            512 | 3,765.8 us | 359.93 us | 238.07 us |
+        */
+        function getData() {
+            const sourceText = `
+|               Method | NumberOfValues | Other Cat |       Mean |     Error |    StdDev |
+|--------------------- |--------------- |--------------- |-----------:|----------:|----------:|
+|  Int32ValuesXmlAsync |             64 |             1 | 1,322.7 us |  66.86 us |  44.22 us |
+| Int32ValuesJsonAsync |             64 |             1 |   781.4 us | 137.00 us |  90.62 us |
+|  |              |              |    |  |   |
+| StringValuesXmlAsync |             64 |             1 | 1,107.1 us |  61.36 us |  40.59 us |
+|  Int32ValuesXmlAsync |            512 |             1 | 4,687.0 us | 343.05 us | 226.90 us |
+| Int32ValuesJsonAsync |            512 |             1 |   941.3 us |  77.45 us |  51.23 us |
+| StringValuesXmlAsync |            512 |             1 | 3,765.8 us | 359.93 us | 238.07 us |
+            `;
+
+            // const rows = sourceText
+            //     .split('\n')
+            //     .map(i => i.trim())
+            //     .filter(i => i.length > 2 && i.startsWith('|') && i.endsWith('|'))
+            //     .filter((i, index) => index !== 1);
+
+            const rows = sourceText
+                .split('\n')
+                .map(i => i.trim())
+                .filter(i => i.length > 2 && i.startsWith('|') && i.endsWith('|'))
+                .filter((i, index) => index !== 1)
+                .map(i => ({
+                    row: i,
+                    columns: i
+                        .split('|')
+                        .slice(1, -1)
+                        .map(i => i.trim())
+                }))
+                .filter(i => i.columns.some(c => c.length > 0));
+
+            const headerRow = rows[0];
+            const methodIndex = headerRow.columns.indexOf('Method');
+            const runtimeIndex = headerRow.columns.indexOf('Runtime');
+            const meanIndex = headerRow.columns.lastIndexOf('Mean');
+
+            const categoryIndexStart = Math.max(methodIndex, runtimeIndex) + 1;
+            const categoryIndexEnd = meanIndex - 1;
+
+            const methods = new Map();
+
+            for (const row of rows) {
+                if (row === headerRow) {
+                    continue;
+                }
+
+                row.categoryName = '';
+
+                for (let i = categoryIndexStart; i <= categoryIndexEnd; i++) {
+                    const separator = row.categoryName.length > 0 ? ', ' : '';
+                    row.categoryName += `${separator}${row.columns[i]}`;
+                }
+
+                const methodName = row.columns[methodIndex];
+                let methodValues = methods.get(methodName);
+
+                if (typeof (methodValues) === 'undefined') {
+                    methodValues = [];
+                    methods.set(methodName, methodValues);
+                }
+
+                const valueAndScale = getValueAndScale(row.columns[meanIndex]);
+
+                methodValues.push({
+                    category: row.categoryName,
+                    value: valueAndScale.value,
+                    scale: valueAndScale.scale
+                });
+            }
+
+            // const categories = new Set();
+
+            // for (const method of methods) {
+            //     for (const value of method[1]) {
+            //         categories.add(value.category);
+            //     }
+            // }
+            // methods.forEach(methodValues => {
+            //     methodValues.forEach(value => {
+            //         categories.add(value.category);
+            //     })
+            // });
+
+            // console.log(categories);
+            console.log(methods);
+
+            // for (const iterator of methods) {
+            //     console.log(iterator[0]);
+            // }
+
+            console.log(rows);
+
+            console.log({
+                methodIndex,
+                runtimeIndex,
+                meanIndex,
+                categoryIndexStart,
+                categoryIndexEnd
+            });
+
+            const methodsArray = [...methods]
+                .map(i => ({
+                    name: i[0],
+                    values: i[1]
+                }));
+
+            return {
+                categories: getCategories(),
+                CategoriesTitle: getCategoriesTitle(),
+                methods: methodsArray,
+                scale: inferScale(methods)
+            };
+
+            function getCategories() {
+                const categories = new Set();
+                for (const method of methods) {
+                    for (const value of method[1]) {
+                        categories.add(value.category);
+                    }
+                }
+                return [...categories];
+            }
+
+            function getCategoriesTitle() {
+                let title = '';
+                for (let i = categoryIndexStart; i <= categoryIndexEnd; i++) {
+                    const separator = title.length > 0 ? ', ' : '';
+                    title += `${separator}${headerRow.columns[i]}`;
+                }
+                return title;
+            }
+
+            function inferScale() {
+                for (const method of methods) {
+                    for (const value of method[1]) {
+                        switch (value.scale) {
+                            case 'us':
+                                return 'Microseconds';
+                            case 'ms':
+                                return 'Milliseconds';
+                            case 's':
+                                return 'Seconds';
+                            default:
+                                return value.scale;
+                        }
+                    }
+                }
+            }
+
+            function getValueAndScale(formattedNumber) {
+                const scaleSeparatorIndex = formattedNumber.indexOf(' ');
+                const scale = scaleSeparatorIndex >= 0 ? formattedNumber.substring(scaleSeparatorIndex).trim() : '';
+                const value = parseFloat(formattedNumber.replace(/[^0-9.]/g, ''));
+                return {
+                    value,
+                    scale
+                }
+            }
+        }
+
+        const data = getData();
+        console.log(data);
+    </script>
+</body>
+
+</html>
+<!-- 
+    https://coolors.co/palette/f94144-f3722c-f8961e-f9c74f-90be6d-43aa8b-4d908e-577590
+    https://coolors.co/palette/ff595e-ff924c-ffca3a-c5ca30-8ac926-36949d-1982c4-4267ac-565aa0-6a4c93
+    https://coolors.co/palette/264653-287271-2a9d8f-8ab17d-babb74-e9c46a-efb366-f4a261-ee8959-e76f51
+    https://coolors.co/palette/264653-287271-2a9d8f-8ab17d-e9c46a-f4a261-ee8959-e76f51
+-->
+<!--
+            // const categories = new Map();
+
+            // linesWithColumns.forEach(e => {
+            //     if (e === headerRow)
+            //     {
+            //         return;
+            //     }
+
+            //     e.categoryName = '';
+
+            //     for (let i = categoryIndexStart; i <= categoryIndexEnd; i++) {
+            //         const separator = e.categoryName.length > 0 ? ', ' : '';
+            //         e.categoryName += `${separator}${e.columns[i]}`;
+            //     }
+
+            //     let category = categories.get(e.categoryName);
+
+            //     if (typeof(category) === 'undefined'){
+            //         category = {
+            //             name: e.categoryName,
+            //             methods: new Map()
+            //         };
+            //         categories.set(e.categoryName, category);
+            //     }
+
+            //     const methodName = e.columns[methodIndex];
+            //     let method = category.methods.get(methodName);
+
+            //     if (typeof(method) === 'undefined'){
+            //         method = {
+            //             name: methodName,
+            //             values: []
+            //         };
+            //         category.methods.set(methodName, method);
+            //     }
+
+            //     const mean = parseFloat(e.columns[meanIndex].replace(/[^0-9.]/g, ''));
+            //     method.values.push(mean);
+            // });
+
+            // console.log(categories);
+
+
+
+-->
