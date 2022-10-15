@@ -23,6 +23,8 @@
         integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
+    <script src="js/app.js"></script>
+
     <style>
         body {
             font-size: 0.8rem;
@@ -72,7 +74,7 @@
                     <div class="row">
                         <div class="col">
                             <label for="rangeInput" class="form-label">Chart Size</label>
-                            <input type="range" id="rangeInput" min="0" max="100" value="100" class="form-range">
+                            <input type="range" id="rangeInput" min="0" max="100" step="5" value="100" class="form-range">
                         </div>
                         <div class="col">
                             <label for="customRange1" class="form-label">Style</label>
@@ -135,135 +137,143 @@
             link.href = chartCanvas.toDataURL();
             link.click();
         });
+        
+        const builder = new ChartBuilder(chartCanvas);
+        const asd = builder.loadBenchmarkResults(document.getElementById('resultsInput').value);
+        console.log(asd);
     </script>
 
     <script>
-        console.log(document.body.style.colorScheme);
-        const ctx = document.getElementById('myChart').getContext('2d');
-        const gridLinesColor = Chart.defaults.color;//'#dee2e6';
-        // console.log(Chart.defaults.borderColor);
-        //  Chart.defaults.borderColor='#dee2e6';
-        Chart.defaults.borderColor = '#202020';//404040 //20202020
-        const myChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['64, 1', '512, 1'],
-                datasets: [{
-                    label: 'Int32ValuesXmlAsync',
-                    data: [1322.7, 4687.0],
-                    backgroundColor: '#f94144',
-                    // borderColor: Chart.helpers.color('red').lighten(0.2),
-                    // borderColor: function (context, options) {
-                    //     const color = options.color; // resolve the value of another scriptable option: 'red', 'blue' or 'green'
-                    //     console.log(color);
-                    //     return Chart.helpers.color(color).lighten(0.2);
-                    // },
-                    // backgroundColor: [
-                    //     'rgba(255, 99, 132, 0.2)',
-                    //     'rgba(54, 162, 235, 0.2)',
-                    //     'rgba(255, 159, 64, 0.2)'
-                    // ],
-                    // borderColor: [
-                    //     'rgba(255, 99, 132, 1)',
-                    //     'rgba(54, 162, 235, 1)',
-                    //     'rgba(255, 206, 86, 1)',
-                    // ],
-                    borderWidth: 1
-                },
-                {
-                    label: 'Int32ValuesJsonAsync',
-                    data: [781.4, 941.3],
-                    backgroundColor: '#f3722c',
-                    // backgroundColor: [
-                    //     'rgba(255, 99, 132, 0.2)',
-                    //     'rgba(54, 162, 235, 0.2)',
-                    //     'rgba(255, 159, 64, 0.2)'
-                    // ],
-                    // borderColor: [
-                    //     'rgba(255, 99, 132, 1)',
-                    //     'rgba(54, 162, 235, 1)',
-                    //     'rgba(255, 206, 86, 1)',
-                    // ],
-                    borderWidth: 1
-                },
-                {
-                    label: 'StringValuesXmlAsync',
-                    data: [1107.1, 3765.8],
-                    backgroundColor: '#f8961e',
-                    // backgroundColor: [
-                    //     'rgba(255, 99, 132, 0.2)',
-                    //     'rgba(54, 162, 235, 0.2)',
-                    //     'rgba(255, 159, 64, 0.2)'
-                    // ],
-                    // borderColor: [
-                    //     'rgba(255, 99, 132, 1)',
-                    //     'rgba(54, 162, 235, 1)',
-                    //     'rgba(255, 206, 86, 1)',
-                    // ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                plugins: {
-                    subtitle: {
-                        display: true,
-                        text: 'Chart by chartbenchmark.net',
-                        position: 'right',
-                        align: 'center',
-                        color: '#555',
-                        fullSize: false
-                    }
-                },
-                scales: {
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'Microseconds'
-                        },
-                        ticks1: {
-                            major: {
-                                enabled: false
-                            }
-                        },
-                        grid1: {
-                            color: gridLinesColor,
-                            borderColor: gridLinesColor
-                        }
-                        // beginAtZero: true,
-                        // color: '#000000'
-                        // ticks: {
-                        //     callback: function (value, index, ticks) {
-                        //         return `${Chart.helpers.formatNumber(value)} us`;
-                        //     }
-                        // }
-                        // type: 'logarithmic'
+        function test() {
 
+            console.log(document.body.style.colorScheme);
+            const ctx = document.getElementById('myChart').getContext('2d');
+            const gridLinesColor = Chart.defaults.color;//'#dee2e6';
+            // console.log(Chart.defaults.borderColor);
+            //  Chart.defaults.borderColor='#dee2e6';
+            Chart.defaults.borderColor = '#202020';//404040 //20202020
+            const myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['64, 1', '512, 1'],
+                    datasets: [{
+                        label: 'Int32ValuesXmlAsync',
+                        data: [1322.7, 4687.0],
+                        backgroundColor: '#f94144',
+                        // borderColor: Chart.helpers.color('red').lighten(0.2),
+                        // borderColor: function (context, options) {
+                        //     const color = options.color; // resolve the value of another scriptable option: 'red', 'blue' or 'green'
+                        //     console.log(color);
+                        //     return Chart.helpers.color(color).lighten(0.2);
+                        // },
+                        // backgroundColor: [
+                        //     'rgba(255, 99, 132, 0.2)',
+                        //     'rgba(54, 162, 235, 0.2)',
+                        //     'rgba(255, 159, 64, 0.2)'
+                        // ],
+                        // borderColor: [
+                        //     'rgba(255, 99, 132, 1)',
+                        //     'rgba(54, 162, 235, 1)',
+                        //     'rgba(255, 206, 86, 1)',
+                        // ],
+                        borderWidth: 1
                     },
-                    x: {
-                        title: {
+                    {
+                        label: 'Int32ValuesJsonAsync',
+                        data: [781.4, 941.3],
+                        backgroundColor: '#f3722c',
+                        // backgroundColor: [
+                        //     'rgba(255, 99, 132, 0.2)',
+                        //     'rgba(54, 162, 235, 0.2)',
+                        //     'rgba(255, 159, 64, 0.2)'
+                        // ],
+                        // borderColor: [
+                        //     'rgba(255, 99, 132, 1)',
+                        //     'rgba(54, 162, 235, 1)',
+                        //     'rgba(255, 206, 86, 1)',
+                        // ],
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'StringValuesXmlAsync',
+                        data: [1107.1, 3765.8],
+                        backgroundColor: '#f8961e',
+                        // backgroundColor: [
+                        //     'rgba(255, 99, 132, 0.2)',
+                        //     'rgba(54, 162, 235, 0.2)',
+                        //     'rgba(255, 159, 64, 0.2)'
+                        // ],
+                        // borderColor: [
+                        //     'rgba(255, 99, 132, 1)',
+                        //     'rgba(54, 162, 235, 1)',
+                        //     'rgba(255, 206, 86, 1)',
+                        // ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    plugins: {
+                        subtitle: {
                             display: true,
-                            text: 'Category, Other Category'
+                            text: 'Chart by chartbenchmark.net',
+                            position: 'right',
+                            align: 'center',
+                            color: '#555',
+                            fullSize: false
                         }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Microseconds'
+                            },
+                            ticks1: {
+                                major: {
+                                    enabled: false
+                                }
+                            },
+                            grid1: {
+                                color: gridLinesColor,
+                                borderColor: gridLinesColor
+                            }
+                            // beginAtZero: true,
+                            // color: '#000000'
+                            // ticks: {
+                            //     callback: function (value, index, ticks) {
+                            //         return `${Chart.helpers.formatNumber(value)} us`;
+                            //     }
+                            // }
+                            // type: 'logarithmic'
+
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Category, Other Category'
+                            }
+                        }
+                        // myScale: {
+                        //     type: 'logarithmic',
+                        //     position: 'right', // `axis` is determined by the position as `'y'`
+                        // }
                     }
-                    // myScale: {
-                    //     type: 'logarithmic',
-                    //     position: 'right', // `axis` is determined by the position as `'y'`
-                    // }
                 }
-            }
-        });
-        /*
-        |               Method | NumberOfValues |       Mean |     Error |    StdDev |
-        |--------------------- |--------------- |-----------:|----------:|----------:|
-        |  Int32ValuesXmlAsync |             64 | 1,322.7 us |  66.86 us |  44.22 us |
-        | Int32ValuesJsonAsync |             64 |   781.4 us | 137.00 us |  90.62 us |
-        | StringValuesXmlAsync |             64 | 1,107.1 us |  61.36 us |  40.59 us |
-        |  Int32ValuesXmlAsync |            512 | 4,687.0 us | 343.05 us | 226.90 us |
-        | Int32ValuesJsonAsync |            512 |   941.3 us |  77.45 us |  51.23 us |
-        | StringValuesXmlAsync |            512 | 3,765.8 us | 359.93 us | 238.07 us |
-        */
-        function getData() {
-            const sourceText = `
+            });
+
+            console.log(myChart);
+            /*
+            |               Method | NumberOfValues |       Mean |     Error |    StdDev |
+            |--------------------- |--------------- |-----------:|----------:|----------:|
+            |  Int32ValuesXmlAsync |             64 | 1,322.7 us |  66.86 us |  44.22 us |
+            | Int32ValuesJsonAsync |             64 |   781.4 us | 137.00 us |  90.62 us |
+            | StringValuesXmlAsync |             64 | 1,107.1 us |  61.36 us |  40.59 us |
+            |  Int32ValuesXmlAsync |            512 | 4,687.0 us | 343.05 us | 226.90 us |
+            | Int32ValuesJsonAsync |            512 |   941.3 us |  77.45 us |  51.23 us |
+            | StringValuesXmlAsync |            512 | 3,765.8 us | 359.93 us | 238.07 us |
+            */
+            function getData() {
+                const sourceText = `
 |               Method | NumberOfValues | Other Cat |       Mean |     Error |    StdDev |
 |--------------------- |--------------- |--------------- |-----------:|----------:|----------:|
 |  Int32ValuesXmlAsync |             64 |             1 | 1,322.7 us |  66.86 us |  44.22 us |
@@ -275,157 +285,159 @@
 | StringValuesXmlAsync |            512 |             1 | 3,765.8 us | 359.93 us | 238.07 us |
             `;
 
-            // const rows = sourceText
-            //     .split('\n')
-            //     .map(i => i.trim())
-            //     .filter(i => i.length > 2 && i.startsWith('|') && i.endsWith('|'))
-            //     .filter((i, index) => index !== 1);
+                // const rows = sourceText
+                //     .split('\n')
+                //     .map(i => i.trim())
+                //     .filter(i => i.length > 2 && i.startsWith('|') && i.endsWith('|'))
+                //     .filter((i, index) => index !== 1);
 
-            const rows = sourceText
-                .split('\n')
-                .map(i => i.trim())
-                .filter(i => i.length > 2 && i.startsWith('|') && i.endsWith('|'))
-                .filter((i, index) => index !== 1)
-                .map(i => ({
-                    row: i,
-                    columns: i
-                        .split('|')
-                        .slice(1, -1)
-                        .map(i => i.trim())
-                }))
-                .filter(i => i.columns.some(c => c.length > 0));
+                const rows = sourceText
+                    .split('\n')
+                    .map(i => i.trim())
+                    .filter(i => i.length > 2 && i.startsWith('|') && i.endsWith('|'))
+                    .filter((i, index) => index !== 1)
+                    .map(i => ({
+                        row: i,
+                        columns: i
+                            .split('|')
+                            .slice(1, -1)
+                            .map(i => i.trim())
+                    }))
+                    .filter(i => i.columns.some(c => c.length > 0));
 
-            const headerRow = rows[0];
-            const methodIndex = headerRow.columns.indexOf('Method');
-            const runtimeIndex = headerRow.columns.indexOf('Runtime');
-            const meanIndex = headerRow.columns.lastIndexOf('Mean');
+                const headerRow = rows[0];
+                const methodIndex = headerRow.columns.indexOf('Method');
+                const runtimeIndex = headerRow.columns.indexOf('Runtime');
+                const meanIndex = headerRow.columns.lastIndexOf('Mean');
 
-            const categoryIndexStart = Math.max(methodIndex, runtimeIndex) + 1;
-            const categoryIndexEnd = meanIndex - 1;
+                const categoryIndexStart = Math.max(methodIndex, runtimeIndex) + 1;
+                const categoryIndexEnd = meanIndex - 1;
 
-            const methods = new Map();
+                const methods = new Map();
 
-            for (const row of rows) {
-                if (row === headerRow) {
-                    continue;
-                }
-
-                row.categoryName = '';
-
-                for (let i = categoryIndexStart; i <= categoryIndexEnd; i++) {
-                    const separator = row.categoryName.length > 0 ? ', ' : '';
-                    row.categoryName += `${separator}${row.columns[i]}`;
-                }
-
-                const methodName = row.columns[methodIndex];
-                let methodValues = methods.get(methodName);
-
-                if (typeof (methodValues) === 'undefined') {
-                    methodValues = [];
-                    methods.set(methodName, methodValues);
-                }
-
-                const valueAndScale = getValueAndScale(row.columns[meanIndex]);
-
-                methodValues.push({
-                    category: row.categoryName,
-                    value: valueAndScale.value,
-                    scale: valueAndScale.scale
-                });
-            }
-
-            // const categories = new Set();
-
-            // for (const method of methods) {
-            //     for (const value of method[1]) {
-            //         categories.add(value.category);
-            //     }
-            // }
-            // methods.forEach(methodValues => {
-            //     methodValues.forEach(value => {
-            //         categories.add(value.category);
-            //     })
-            // });
-
-            // console.log(categories);
-            console.log(methods);
-
-            // for (const iterator of methods) {
-            //     console.log(iterator[0]);
-            // }
-
-            console.log(rows);
-
-            console.log({
-                methodIndex,
-                runtimeIndex,
-                meanIndex,
-                categoryIndexStart,
-                categoryIndexEnd
-            });
-
-            const methodsArray = [...methods]
-                .map(i => ({
-                    name: i[0],
-                    values: i[1]
-                }));
-
-            return {
-                categories: getCategories(),
-                CategoriesTitle: getCategoriesTitle(),
-                methods: methodsArray,
-                scale: inferScale(methods)
-            };
-
-            function getCategories() {
-                const categories = new Set();
-                for (const method of methods) {
-                    for (const value of method[1]) {
-                        categories.add(value.category);
+                for (const row of rows) {
+                    if (row === headerRow) {
+                        continue;
                     }
-                }
-                return [...categories];
-            }
 
-            function getCategoriesTitle() {
-                let title = '';
-                for (let i = categoryIndexStart; i <= categoryIndexEnd; i++) {
-                    const separator = title.length > 0 ? ', ' : '';
-                    title += `${separator}${headerRow.columns[i]}`;
-                }
-                return title;
-            }
+                    row.categoryName = '';
 
-            function inferScale() {
-                for (const method of methods) {
-                    for (const value of method[1]) {
-                        switch (value.scale) {
-                            case 'us':
-                                return 'Microseconds';
-                            case 'ms':
-                                return 'Milliseconds';
-                            case 's':
-                                return 'Seconds';
-                            default:
-                                return value.scale;
+                    for (let i = categoryIndexStart; i <= categoryIndexEnd; i++) {
+                        const separator = row.categoryName.length > 0 ? ', ' : '';
+                        row.categoryName += `${separator}${row.columns[i]}`;
+                    }
+
+                    const methodName = row.columns[methodIndex];
+                    let methodValues = methods.get(methodName);
+
+                    if (typeof (methodValues) === 'undefined') {
+                        methodValues = [];
+                        methods.set(methodName, methodValues);
+                    }
+
+                    const valueAndScale = getValueAndScale(row.columns[meanIndex]);
+
+                    methodValues.push({
+                        category: row.categoryName,
+                        value: valueAndScale.value,
+                        scale: valueAndScale.scale
+                    });
+                }
+
+                // const categories = new Set();
+
+                // for (const method of methods) {
+                //     for (const value of method[1]) {
+                //         categories.add(value.category);
+                //     }
+                // }
+                // methods.forEach(methodValues => {
+                //     methodValues.forEach(value => {
+                //         categories.add(value.category);
+                //     })
+                // });
+
+                // console.log(categories);
+                console.log(methods);
+
+                // for (const iterator of methods) {
+                //     console.log(iterator[0]);
+                // }
+
+                console.log(rows);
+
+                console.log({
+                    methodIndex,
+                    runtimeIndex,
+                    meanIndex,
+                    categoryIndexStart,
+                    categoryIndexEnd
+                });
+
+                const methodsArray = [...methods]
+                    .map(i => ({
+                        name: i[0],
+                        values: i[1]
+                    }));
+
+                return {
+                    categories: getCategories(),
+                    CategoriesTitle: getCategoriesTitle(),
+                    methods: methodsArray,
+                    scale: inferScale(methods)
+                };
+
+                function getCategories() {
+                    const categories = new Set();
+                    for (const method of methods) {
+                        for (const value of method[1]) {
+                            categories.add(value.category);
+                        }
+                    }
+                    return [...categories];
+                }
+
+                function getCategoriesTitle() {
+                    let title = '';
+                    for (let i = categoryIndexStart; i <= categoryIndexEnd; i++) {
+                        const separator = title.length > 0 ? ', ' : '';
+                        title += `${separator}${headerRow.columns[i]}`;
+                    }
+                    return title;
+                }
+
+                function inferScale() {
+                    for (const method of methods) {
+                        for (const value of method[1]) {
+                            switch (value.scale) {
+                                case 'us':
+                                    return 'Microseconds';
+                                case 'ms':
+                                    return 'Milliseconds';
+                                case 's':
+                                    return 'Seconds';
+                                default:
+                                    return value.scale;
+                            }
                         }
                     }
                 }
-            }
 
-            function getValueAndScale(formattedNumber) {
-                const scaleSeparatorIndex = formattedNumber.indexOf(' ');
-                const scale = scaleSeparatorIndex >= 0 ? formattedNumber.substring(scaleSeparatorIndex).trim() : '';
-                const value = parseFloat(formattedNumber.replace(/[^0-9.]/g, ''));
-                return {
-                    value,
-                    scale
+                function getValueAndScale(formattedNumber) {
+                    const scaleSeparatorIndex = formattedNumber.indexOf(' ');
+                    const scale = scaleSeparatorIndex >= 0 ? formattedNumber.substring(scaleSeparatorIndex).trim() : '';
+                    const value = parseFloat(formattedNumber.replace(/[^0-9.]/g, ''));
+                    return {
+                        value,
+                        scale
+                    }
                 }
             }
+
+            const data = getData();
+            console.log(data);
         }
 
-        const data = getData();
-        console.log(data);
     </script>
 </body>
 
