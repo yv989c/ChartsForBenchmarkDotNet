@@ -5,8 +5,10 @@ interface IBenchmarkResultRow {
     columns: string[]
 }
 
-interface IBenchmarkResults {
-    categoriesTitle: string
+interface IMethodValue {
+    category: string,
+    value: number,
+    scale: string
 }
 
 enum Theme {
@@ -16,18 +18,20 @@ enum Theme {
 
 class ChartBuilder {
     private readonly _chart: any;
+    private readonly _colors = ['#F94144', '#F3722C', '#F8961E', '#F9C74F', '#90BE6D', '#43AA8B', '#4D908E', '#577590'];
 
     private _benchmarkResultRows: IBenchmarkResultRow[] = [];
     private _theme = Theme.Dark;
     private _yAxeTextColor = '#606060';
     private _xAxeTextColor = '#606060';
-    private _gridLineColor = '#0000001a';
-    private _creditTextColor = '#00000040';
+    private _gridLineColor = '';
+    private _creditTextColor = '';
+    private _useLogarithmicScale = false;
 
-    public get theme() {
+    get theme() {
         return this._theme;
     }
-    public set theme(value) {
+    set theme(value) {
         switch (value) {
             case Theme.Dark:
                 this._creditTextColor = '#66666675';
@@ -41,6 +45,15 @@ class ChartBuilder {
                 break;
         }
         this._theme = value;
+        this.render();
+    }
+
+    get useLogarithmicScale() {
+        return this._useLogarithmicScale;
+    }
+    set useLogarithmicScale(value) {
+        this._useLogarithmicScale = value;
+        this.render();
     }
 
     private get chartPlugins() {
@@ -52,9 +65,10 @@ class ChartBuilder {
     }
 
     constructor(canvas: HTMLCanvasElement) {
-        console.log(Chart.defaults.borderColor);
-        this.theme = Theme.Dark ;//this.theme;
         this._chart = getChart();
+        this.theme = this.theme;
+
+        console.log(Chart.defaults.borderColor);
         console.log(this._chart);
         console.log(Chart.defaults.color);
         console.log(this);
@@ -68,7 +82,7 @@ class ChartBuilder {
                     plugins: {
                         subtitle: {
                             display: true,
-                            text: 'Chart by chartbenchmark.net',
+                            text: 'Made with chartbenchmark.net',
                             position: 'right',
                             align: 'center',
                             fullSize: false,
@@ -81,15 +95,12 @@ class ChartBuilder {
                     scales: {
                         y: {
                             title: {
-                                display: true,
-                                text: 'Microseconds',
-                                color1: Chart.defaults.color
-                            },
+                                display: true
+                            }
                         },
                         x: {
                             title: {
-                                display: true,
-                                text: 'Category, Other Category'
+                                display: true
                             }
                         }
                     }
@@ -100,8 +111,8 @@ class ChartBuilder {
         }
     }
 
-    loadBenchmarkResults(text: string) {
-        const rows = text
+    loadBenchmarkResult(text: string) {
+        this._benchmarkResultRows = text
             .split('\n')
             .map(i => i.trim())
             .filter(i => i.length > 2 && i.startsWith('|') && i.endsWith('|'))
@@ -111,10 +122,19 @@ class ChartBuilder {
                 columns: i
                     .split('|')
                     .slice(1, -1)
-                    .map(i => i.trim())
+                    .map(i => i.replace(/\*/g, '').trim())
             }))
             .filter(i => i.columns.some(c => c.length > 0));
 
+        this.render();
+    }
+
+    private getBenchmarkResult() {
+        const rows = this._benchmarkResultRows;
+
+        if (rows.length === 0) {
+            return null;
+        }
 
         const headerRow = rows[0];
         const methodIndex = headerRow.columns.indexOf('Method');
@@ -124,7 +144,7 @@ class ChartBuilder {
         const categoryIndexStart = Math.max(methodIndex, runtimeIndex) + 1;
         const categoryIndexEnd = meanIndex - 1;
 
-        const methods = new Map();
+        const methods = new Map<string, IMethodValue[]>();
 
         for (const row of rows) {
             if (row === headerRow) {
@@ -155,23 +175,15 @@ class ChartBuilder {
             });
         }
 
-        const methodsArray = [...methods]
-            .map(i => ({
-                name: i[0],
-                values: i[1]
-            }));
-
-        this.render();
-
         return {
             categories: getCategories(),
-            CategoriesTitle: getCategoriesTitle(),
-            methods: methodsArray,
+            categoriesTitle: getCategoriesTitle(),
+            methods: getMethods(),
             scale: inferScale()
         };
 
         function getCategories() {
-            const categories = new Set();
+            const categories = new Set<string>();
             for (const method of methods) {
                 for (const value of method[1]) {
                     categories.add(value.category);
@@ -189,11 +201,20 @@ class ChartBuilder {
             return title;
         }
 
+        function getMethods() {
+            return [...methods]
+                .map(i => ({
+                    name: i[0],
+                    values: i[1]
+                }));
+        }
+
         function inferScale() {
             for (const method of methods) {
                 for (const value of method[1]) {
                     switch (value.scale) {
                         case 'us':
+                        case 'μs':
                             return 'Microseconds';
                         case 'ms':
                             return 'Milliseconds';
@@ -218,25 +239,51 @@ class ChartBuilder {
     }
 
     private render() {
+        const benchmarkResult = this.getBenchmarkResult();
+        if (benchmarkResult === null) {
+            return;
+        }
+
         this.chartPlugins.subtitle.color = this._creditTextColor;
 
-        this.chartScales.y.title.text = 'Seconds';
-        this.chartScales.y.title.color = this._yAxeTextColor;
-        this.chartScales.y.grid.color = this._gridLineColor;
+        const yAxe = this.chartScales.y;
+        yAxe.title.text = benchmarkResult.scale;
+        yAxe.title.color = this._yAxeTextColor;
+        yAxe.grid.color = this._gridLineColor;
+        yAxe.type = this.useLogarithmicScale ? 'logarithmic' : 'linear';
 
-        this.chartScales.x.title.text = 'Category';
-        this.chartScales.x.title.color = this._xAxeTextColor;
-        this.chartScales.x.grid.color = this._gridLineColor;
-        
-        this._chart.data.labels = ['64, 1', '512, 1'];
-        this._chart.data.datasets = [
-            {
-                label: 'Int32ValuesXmlAsync',
-                data: [1322.7, 4687.0],
-                backgroundColor: '#f94144'
+        const xAxe = this.chartScales.x;
+        xAxe.title.text = benchmarkResult.categoriesTitle;
+        xAxe.title.color = this._xAxeTextColor;
+        xAxe.grid.color = this._gridLineColor;
+
+        const chartData = this._chart.data;
+
+        chartData.labels = benchmarkResult.categories;
+
+        const colors = this._colors;
+        let colorIndex = 0;
+
+        chartData.datasets = benchmarkResult.methods
+            .map(m => ({
+                label: m.name,
+                data: m.values.map(v => v.value),
+                backgroundColor: getNextColor()
+            }));
+
+        function getNextColor() {
+            if ((colorIndex ^ colors.length) === 0) {
+                colorIndex = 0;
             }
-        ];
-
+            return colors[colorIndex++];
+        }
+        // this._chart.data.datasets = [
+        //     {
+        //         label: 'Int32ValuesXmlAsync',
+        //         data: [1322.7, 4687.0],
+        //         backgroundColor: '#f94144'
+        //     }
+        // ];
 
         // this.chart.config.scales = {
         //     y: {

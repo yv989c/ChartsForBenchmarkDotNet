@@ -74,7 +74,8 @@
                     <div class="row">
                         <div class="col">
                             <label for="rangeInput" class="form-label">Chart Size</label>
-                            <input type="range" id="rangeInput" min="0" max="100" step="5" value="100" class="form-range">
+                            <input type="range" id="rangeInput" min="0" max="100" step="5" value="100"
+                                class="form-range">
                         </div>
                         <div class="col">
                             <label for="customRange1" class="form-label">Style</label>
@@ -118,6 +119,19 @@
 
     <script>
         const chartCanvas = document.getElementById('myChart');
+        const builder = new ChartBuilder(chartCanvas);
+
+        const resultsInput = document.getElementById('resultsInput');
+        resultsInput.addEventListener('input', e => {
+            loadBenchmarkResult();
+        });
+
+        function loadBenchmarkResult(){
+            builder.loadBenchmarkResult(resultsInput.value);
+        }
+
+        loadBenchmarkResult();
+
         const chartWrapper = document.getElementById('chartWrapper');
         document.getElementById('rangeInput').addEventListener('input', e => {
             e.target.title = event.target.value + '%';
@@ -137,10 +151,6 @@
             link.href = chartCanvas.toDataURL();
             link.click();
         });
-        
-        const builder = new ChartBuilder(chartCanvas);
-        const asd = builder.loadBenchmarkResults(document.getElementById('resultsInput').value);
-        console.log(asd);
     </script>
 
     <script>
