@@ -261,15 +261,31 @@ class ChartBuilder {
 
         chartData.labels = benchmarkResult.categories;
 
+        const indexByCategory = new Map<string, number>();
+        for (let index = 0; index < benchmarkResult.categories.length; index++) {
+            indexByCategory.set(benchmarkResult.categories[index], index);
+        }
+
         const colors = this._colors;
         let colorIndex = 0;
 
         chartData.datasets = benchmarkResult.methods
             .map(m => ({
                 label: m.name,
-                data: m.values.map(v => v.value),
+                data: getData(m.values),
                 backgroundColor: getNextColor()
             }));
+
+        function getData(values: IMethodValue[]) {
+            const data: number[] = new Array(indexByCategory.size);
+            for (const value of values) {
+                const index = indexByCategory.get(value.category);
+                if (index !== undefined) {
+                    data[index] = value.value;
+                }
+            }
+            return data;
+        }
 
         function getNextColor() {
             if ((colorIndex ^ colors.length) === 0) {
@@ -277,28 +293,6 @@ class ChartBuilder {
             }
             return colors[colorIndex++];
         }
-        // this._chart.data.datasets = [
-        //     {
-        //         label: 'Int32ValuesXmlAsync',
-        //         data: [1322.7, 4687.0],
-        //         backgroundColor: '#f94144'
-        //     }
-        // ];
-
-        // this.chart.config.scales = {
-        //     y: {
-        //         title: {
-        //             display: true,
-        //             text: 'Seconds'
-        //         },
-        //     },
-        //     x: {
-        //         title: {
-        //             display: true,
-        //             text: 'Category, Other Category'
-        //         }
-        //     }
-        // };
 
         this._chart.update();
     }
