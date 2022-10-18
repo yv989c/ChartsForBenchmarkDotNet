@@ -1,5 +1,5 @@
 "use strict";
-var Chart; //new (a: any, b: any) => any;
+var Chart;
 var Theme;
 (function (Theme) {
     Theme["Dark"] = "dark";
@@ -245,3 +245,43 @@ class ChartBuilder {
         this._chart.update();
     }
 }
+class App {
+    constructor() {
+        const chartCanvas = document.getElementById('chartCanvas');
+        const builder = new ChartBuilder(chartCanvas);
+        const resultsInput = document.getElementById('resultsInput');
+        resultsInput.addEventListener('input', e => {
+            loadBenchmarkResult();
+        });
+        const chartWrapper = document.getElementById('chartWrapper');
+        document.getElementById('widthRangeInput').addEventListener('input', e => {
+            const element = e.target;
+            const value = `${element.value}%`;
+            element.title = value;
+            chartWrapper.style.width = value;
+        });
+        document.getElementById('themeRadioContainer').addEventListener('input', e => {
+            builder.theme = e.target.value;
+        });
+        document.getElementById('logarithmicOptionCheckInput').addEventListener('input', e => {
+            builder.useLogarithmicScale = e.target.checked;
+        });
+        document.getElementById('copyToClipboardButton').addEventListener('click', e => {
+            chartCanvas.toBlob(blob => {
+                const item = new ClipboardItem({ 'image/png': blob });
+                navigator.clipboard.write([item]);
+            });
+        });
+        document.getElementById('downloadButton').addEventListener('click', e => {
+            var link = document.createElement('a');
+            link.download = 'chart.png';
+            link.href = chartCanvas.toDataURL();
+            link.click();
+        });
+        function loadBenchmarkResult() {
+            builder.loadBenchmarkResult(resultsInput.value);
+        }
+        loadBenchmarkResult();
+    }
+}
+new App();
