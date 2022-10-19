@@ -38,6 +38,19 @@
         .input-group .form-range {
             height: initial;
         }
+
+        .icon {
+            width: 1rem;
+            height: 1rem;
+            fill: #fff;
+            margin-right: 4px;
+        }
+
+        h1 svg {
+            width: 3rem;
+            height: 3rem;
+            fill: #F94144;
+        }
     </style>
 </head>
 
@@ -46,13 +59,22 @@
         <main class="mb-5">
             <div class="row">
                 <div class="col text-center">
-                    <h1>Charts for BenchmarkDotNet</h1>
+                    <h1>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="align-text-bottom" viewBox="0 0 512 512">
+                            <!--! Font Awesome Pro 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+                            <path
+                                d="M32 32c17.7 0 32 14.3 32 32V400c0 8.8 7.2 16 16 16H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H80c-44.2 0-80-35.8-80-80V64C0 46.3 14.3 32 32 32zM160 224c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32s-32-14.3-32-32V256c0-17.7 14.3-32 32-32zm128-64V320c0 17.7-14.3 32-32 32s-32-14.3-32-32V160c0-17.7 14.3-32 32-32s32 14.3 32 32zm64 32c17.7 0 32 14.3 32 32v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V224c0-17.7 14.3-32 32-32zM480 96V320c0 17.7-14.3 32-32 32s-32-14.3-32-32V96c0-17.7 14.3-32 32-32s32 14.3 32 32z" />
+                        </svg>
+                        <br class="d-sm-none">
+                        <span>Charts for BenchmarkDotNet</span>
+                    </h1>
                     <p class="lead">Paste your console results below:</p>
                 </div>
             </div>
             <div class="row">
-                <div class="col mb-5">
-                    <textarea name="" id="resultsInput" rows="10" class="w-100 font-monospace text-nowrap">
+                <div class="col mb-3">
+                    <textarea name="" id="resultsInput" rows="10" class="w-100 font-monospace text-nowrap"
+                        autocomplete="off" spellcheck="false">
 |               Method | NumberOfValues |       Mean |     Error |    StdDev |
 |--------------------- |--------------- |-----------:|----------:|----------:|
 |  Int32ValuesXmlAsync |             64 | 1,322.7 us |  66.86 us |  44.22 us |
@@ -63,7 +85,7 @@
 | StringValuesXmlAsync |            512 | 3,765.8 us | 359.93 us | 238.07 us |                        
                 </textarea>
                     <div class="text-center">
-                        <small>This information does not leave your browser.</small>
+                        <small class="text-muted">(This information does not leave your browser)</small>
                     </div>
                 </div>
             </div>
@@ -77,14 +99,14 @@
                                     <div class="d-flex justify-content-between">
                                         <div class="input-group input-group-sm me-2">
                                             <span id="widthSpan" class="input-group-text">Width</span>
-                                            <input type="range" id="widthRangeInput" min="0" max="100" step="5"
-                                                value="100" class="form-control form-range" aria-label="Chart Width"
+                                            <input type="range" id="widthRangeInput" min="0" max="1" step="0.05"
+                                                value="0.5" class="form-control form-range" aria-label="Chart Width"
                                                 aria-describedby="widthSpan">
                                         </div>
                                         <div class="input-group input-group-sm">
                                             <span id="heightSpan" class="input-group-text">Height</span>
-                                            <input type="range" id="heightRangeInput" min="0" max="100" step="5"
-                                                value="50" class="form-control form-range" aria-label="Chart Height"
+                                            <input type="range" id="heightRangeInput" min="0" max="1" step="0.05"
+                                                value="0.25" class="form-control form-range" aria-label="Chart Height"
                                                 aria-describedby="heightSpan">
                                         </div>
                                     </div>
@@ -122,21 +144,39 @@
                         </div>
                     </div>
                     <hr>
-                    <div id="chartWrapper" class="mx-auto">
-                        <canvas id="chartCanvas" width="600" height="400px"></canvas>
+                    <div id="chartWrapper" class="mx-auto position-relative rounded" style="height: 400px; width: 50%;">
+                        <canvas id="chartCanvas"></canvas>
                     </div>
                     <hr>
                     <div class="text-center">
-                        <button id="copyToClipboardButton" class="btn btn-primary mb-2">Copy to Clipboard</button>
-                        <button id="downloadButton" class="btn btn-primary mb-2">Download as PNG</button>
+                        <button id="copyToClipboardButton" class="btn btn-primary mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 512 512">
+                                <!--! Font Awesome Pro 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+                                <path
+                                    d="M224 0c-35.3 0-64 28.7-64 64V288c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64H224zM64 160c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H288c35.3 0 64-28.7 64-64V384H288v64H64V224h64V160H64z" />
+                            </svg>
+                            <span>Copy</span>
+                        </button>
+                        <button id="downloadButton" class="btn btn-primary mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 512 512">
+                                <!--! Font Awesome Pro 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+                                <path
+                                    d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64zM432 456c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z" />
+                            </svg>
+                            <span>Download</span>
+                        </button>
                     </div>
                 </div>
             </div>
         </main>
         <footer>
             <p class="text-center">
-                Powered by <a href="https://www.chartjs.org/" target="_blank">Chart.js</a><br>
-                Made with ☕&❤️ by <a href="https://github.com/yv989c" target="_blank">yv989c</a>
+                Made with ☕&❤️ by <a href="https://github.com/yv989c" target="_blank">yv989c</a><br>
+                <span>
+                    Powered by <a href="https://bootswatch.com/" target="_blank">Bootswatch</a>,
+                    <a href="https://www.chartjs.org/" target="_blank">Chart.js</a>,
+                    and <a href="https://fontawesome.com/" target="_blank">Font Awesome</a>
+                </span>
             </p>
         </footer>
     </div>

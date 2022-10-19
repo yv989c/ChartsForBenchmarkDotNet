@@ -28,6 +28,7 @@ class ChartBuilder {
             const config = {
                 type: 'bar',
                 options: {
+                    maintainAspectRatio: false,
                     plugins: {
                         subtitle: {
                             display: true,
@@ -247,21 +248,24 @@ class ChartBuilder {
 }
 class App {
     constructor() {
+        const chartWrapper = document.getElementById('chartWrapper');
         const chartCanvas = document.getElementById('chartCanvas');
         const builder = new ChartBuilder(chartCanvas);
         const resultsInput = document.getElementById('resultsInput');
         resultsInput.addEventListener('input', e => {
             loadBenchmarkResult();
         });
-        const chartWrapper = document.getElementById('chartWrapper');
-        document.getElementById('widthRangeInput').addEventListener('input', e => {
-            const element = e.target;
-            const value = `${element.value}%`;
-            element.title = value;
-            chartWrapper.style.width = value;
-        });
+        this.bindSizeControls(chartWrapper);
         document.getElementById('themeRadioContainer').addEventListener('input', e => {
             builder.theme = e.target.value;
+            switch (builder.theme) {
+                case Theme.Dark:
+                    chartWrapper.classList.remove('bg-light');
+                    break;
+                case Theme.Light:
+                    chartWrapper.classList.add('bg-light');
+                    break;
+            }
         });
         document.getElementById('logarithmicOptionCheckInput').addEventListener('input', e => {
             builder.useLogarithmicScale = e.target.checked;
@@ -282,6 +286,27 @@ class App {
             builder.loadBenchmarkResult(resultsInput.value);
         }
         loadBenchmarkResult();
+    }
+    bindSizeControls(chartWrapper) {
+        const widthRangeInput = document.getElementById('widthRangeInput');
+        const heightRangeInput = document.getElementById('heightRangeInput');
+        if (window.screen.width < 992) {
+            widthRangeInput.value = '1';
+        }
+        updateWidth();
+        updateHeight();
+        widthRangeInput.addEventListener('input', updateWidth);
+        heightRangeInput.addEventListener('input', updateHeight);
+        function updateWidth() {
+            const value = `${parseFloat(widthRangeInput.value) * 100}%`;
+            widthRangeInput.title = value;
+            chartWrapper.style.width = value;
+        }
+        function updateHeight() {
+            const value = parseFloat(heightRangeInput.value);
+            heightRangeInput.title = `${value * 100}%`;
+            chartWrapper.style.height = `${value * 1600}px`;
+        }
     }
 }
 new App();
