@@ -18,6 +18,12 @@ enum Theme {
 
 class ChartBuilder {
     private readonly _chart: any;
+    /*
+    https://coolors.co/palette/f94144-f3722c-f8961e-f9c74f-90be6d-43aa8b-4d908e-577590
+    https://coolors.co/palette/ff595e-ff924c-ffca3a-c5ca30-8ac926-36949d-1982c4-4267ac-565aa0-6a4c93
+    https://coolors.co/palette/264653-287271-2a9d8f-8ab17d-babb74-e9c46a-efb366-f4a261-ee8959-e76f51
+    https://coolors.co/palette/264653-287271-2a9d8f-8ab17d-e9c46a-f4a261-ee8959-e76f51
+    */
     private readonly _colors = ['#F94144', '#F3722C', '#F8961E', '#F9C74F', '#90BE6D', '#43AA8B', '#4D908E', '#577590'];
 
     private _benchmarkResultRows: IBenchmarkResultRow[] = [];
@@ -65,16 +71,11 @@ class ChartBuilder {
     }
 
     constructor(canvas: HTMLCanvasElement) {
+        Chart.defaults.font.family = 'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"';
+
         this._chart = getChart();
         this.theme = this.theme;
 
-        console.log(Chart.defaults.borderColor);
-        console.log(this._chart);
-        console.log(Chart.defaults.color);
-        console.log(this);
-        // Chart.defaults.color = 'blue';
-        // Chart.defaults.backgroundColor = 'blue';
-        Chart.defaults.font.family = 'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"';
         function getChart() {
             const config = {
                 type: 'bar',
@@ -240,25 +241,30 @@ class ChartBuilder {
     }
 
     private render() {
+        const yAxe = this.chartScales.y;
+        const xAxe = this.chartScales.x;
+        const chartData = this._chart.data;
         const benchmarkResult = this.getBenchmarkResult();
+
         if (benchmarkResult === null) {
+            yAxe.title.text = '';
+            xAxe.title.text = '';
+            chartData.labels = [];
+            chartData.datasets = [];
+            this._chart.update();
             return;
         }
 
         this.chartPlugins.subtitle.color = this._creditTextColor;
 
-        const yAxe = this.chartScales.y;
         yAxe.title.text = benchmarkResult.scale;
         yAxe.title.color = this._yAxeTextColor;
         yAxe.grid.color = this._gridLineColor;
         yAxe.type = this.useLogarithmicScale ? 'logarithmic' : 'linear';
 
-        const xAxe = this.chartScales.x;
         xAxe.title.text = benchmarkResult.categoriesTitle;
         xAxe.title.color = this._xAxeTextColor;
         xAxe.grid.color = this._gridLineColor;
-
-        const chartData = this._chart.data;
 
         chartData.labels = benchmarkResult.categories;
 
@@ -305,12 +311,7 @@ class App {
         const chartCanvas = document.getElementById('chartCanvas') as HTMLCanvasElement;
         const builder = new ChartBuilder(chartCanvas);
 
-        const resultsInput = document.getElementById('resultsInput')! as HTMLInputElement;
-
-        resultsInput.addEventListener('input', e => {
-            loadBenchmarkResult();
-        });
-
+        this.bindResultsInput(builder);
         this.bindSizeControls(chartWrapper);
 
         document.getElementById('themeRadioContainer')!.addEventListener('input', e => {
@@ -343,11 +344,26 @@ class App {
             link.click();
         });
 
+
+    }
+
+    private bindResultsInput(builder: ChartBuilder) {
+        const resultsInput = document.getElementById('resultsInput') as HTMLInputElement;
+
+        resultsInput.addEventListener('input', () => {
+            loadBenchmarkResult();
+        });
+
+        resultsInput.addEventListener('click', () => {
+            resultsInput.value = '';
+            loadBenchmarkResult();
+        }, { once: true });
+
+        loadBenchmarkResult();
+
         function loadBenchmarkResult() {
             builder.loadBenchmarkResult(resultsInput.value);
         }
-
-        loadBenchmarkResult();
     }
 
     private bindSizeControls(chartWrapper: HTMLElement) {

@@ -5,36 +5,15 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Simple web app that charts your BenchmarkDotNet console results.">
     <title>Charts for BenchmarkDotNet</title>
-
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.2.2/darkly/bootstrap.min.css"
-        integrity="sha512-8RiGzgobZQmqqqJYja5KJzl9RHkThtwqP1wkqvcbbbHNeMXJjTaBOR+6OeuoxHhuDN5h/VlgVEjD7mJu6KNQXA=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
-
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' fill='%23f94144'%3E%3Cpath d='M32 32c17.7 0 32 14.3 32 32V400c0 8.8 7.2 16 16 16H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H80c-44.2 0-80-35.8-80-80V64C0 46.3 14.3 32 32 32zM160 224c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32s-32-14.3-32-32V256c0-17.7 14.3-32 32-32zm128-64V320c0 17.7-14.3 32-32 32s-32-14.3-32-32V160c0-17.7 14.3-32 32-32s32 14.3 32 32zm64 32c17.7 0 32 14.3 32 32v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V224c0-17.7 14.3-32 32-32zM480 96V320c0 17.7-14.3 32-32 32s-32-14.3-32-32V96c0-17.7 14.3-32 32-32s32 14.3 32 32z' /%3E%3C/svg%3E">
+    <link rel="canonical" href="https://chartbenchmark.net">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.2.2/slate/bootstrap.min.css"
         integrity="sha512-1pL5JraDFnKQpIwmTl0kunghVQj0wSv82iT4zHeP32BpkJuvLAgR5kAhGbwXUmAzYOtVyDfzhpbwk5vIK+uIhQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.2/css/bootstrap.min.css"
-        integrity="sha512-CpIKUSyh9QX2+zSdfGP+eWLx23C8Dj9/XmHjZY2uDtfkdLGo0uY12jgcnkX9vXOgYajEKb/jiw67EYm+kBf+6g=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
-
     <style>
-        body {
-            font-size: 0.8rem;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                color-scheme: dark !important;
-            }
-
-            body {
-                background-color: var(--bs-dark);
-                color: var(--bs-light);
-            }
-        }
-
         .input-group .form-range {
             height: initial;
         }
@@ -54,43 +33,61 @@
     </style>
 </head>
 
-<body>
-    <div class="container-fluid py-2">
+<body class="my-2">
+    <div class="container-fluid">
         <main class="mb-5">
             <div class="row">
-                <div class="col text-center">
-                    <h1>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="align-text-bottom" viewBox="0 0 512 512">
-                            <!--! Font Awesome Pro 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
-                            <path
-                                d="M32 32c17.7 0 32 14.3 32 32V400c0 8.8 7.2 16 16 16H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H80c-44.2 0-80-35.8-80-80V64C0 46.3 14.3 32 32 32zM160 224c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32s-32-14.3-32-32V256c0-17.7 14.3-32 32-32zm128-64V320c0 17.7-14.3 32-32 32s-32-14.3-32-32V160c0-17.7 14.3-32 32-32s32 14.3 32 32zm64 32c17.7 0 32 14.3 32 32v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V224c0-17.7 14.3-32 32-32zM480 96V320c0 17.7-14.3 32-32 32s-32-14.3-32-32V96c0-17.7 14.3-32 32-32s32 14.3 32 32z" />
-                        </svg>
-                        <br class="d-sm-none">
-                        <span>Charts for BenchmarkDotNet</span>
-                    </h1>
-                    <p class="lead">Paste your console results below:</p>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col mb-3">
-                    <textarea name="" id="resultsInput" rows="10" class="w-100 font-monospace text-nowrap"
-                        autocomplete="off" spellcheck="false">
-|               Method | NumberOfValues |       Mean |     Error |    StdDev |
-|--------------------- |--------------- |-----------:|----------:|----------:|
-|  Int32ValuesXmlAsync |             64 | 1,322.7 us |  66.86 us |  44.22 us |
-| Int32ValuesJsonAsync |             64 |   781.4 us | 137.00 us |  90.62 us |
-| StringValuesXmlAsync |             64 | 1,107.1 us |  61.36 us |  40.59 us |
-|  Int32ValuesXmlAsync |            512 | 4,687.0 us | 343.05 us | 226.90 us |
-| Int32ValuesJsonAsync |            512 |   941.3 us |  77.45 us |  51.23 us |
-| StringValuesXmlAsync |            512 | 3,765.8 us | 359.93 us | 238.07 us |                        
-                </textarea>
-                    <div class="text-center">
-                        <small class="text-muted">(This information does not leave your browser)</small>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
                 <div class="col-sm-10 offset-sm-1">
+                    <div class="row">
+                        <div class="col text-center">
+                            <h1>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="align-text-bottom" viewBox="0 0 512 512">
+                                    <path
+                                        d="M32 32c17.7 0 32 14.3 32 32V400c0 8.8 7.2 16 16 16H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H80c-44.2 0-80-35.8-80-80V64C0 46.3 14.3 32 32 32zM160 224c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32s-32-14.3-32-32V256c0-17.7 14.3-32 32-32zm128-64V320c0 17.7-14.3 32-32 32s-32-14.3-32-32V160c0-17.7 14.3-32 32-32s32 14.3 32 32zm64 32c17.7 0 32 14.3 32 32v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V224c0-17.7 14.3-32 32-32zM480 96V320c0 17.7-14.3 32-32 32s-32-14.3-32-32V96c0-17.7 14.3-32 32-32s32 14.3 32 32z" />
+                                </svg>
+                                <br class="d-sm-none">
+                                <span>Charts for BenchmarkDotNet</span>
+                            </h1>
+                            <p class="lead">Paste your console results below:</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <textarea name="" id="resultsInput" rows="10" class="w-100 font-monospace text-nowrap"
+                                autocomplete="off" spellcheck="false">
+BenchmarkDotNet=v0.13.2, OS=Windows 11 (10.0.22621.674)
+AMD Ryzen 9 6900HS Creator Edition, 1 CPU, 16 logical and 8 physical cores
+.NET SDK=6.0.401
+    [Host]     : .NET 6.0.9 (6.0.922.41905), X64 RyuJIT AVX2
+    Job-MLMWYV : .NET 6.0.9 (6.0.922.41905), X64 RyuJIT AVX2
+
+Runtime=.NET 6.0  Server=True  InvocationCount=32
+IterationCount=10  RunStrategy=Monitoring  WarmupCount=1
+
+|          Method | NumberOfValues |        Mean |     Error |    StdDev |
+|---------------- |--------------- |------------:|----------:|----------:|
+|  Int32ValuesXml |             32 |  1,031.3 us | 112.23 us |  74.23 us |
+| Int32ValuesJson |             32 |    683.1 us |  20.65 us |  13.66 us |
+|  Int32ValuesXml |             64 |  1,289.4 us | 169.78 us | 112.30 us |
+| Int32ValuesJson |             64 |    710.6 us |  33.60 us |  22.23 us |
+|  Int32ValuesXml |            128 |  1,717.3 us | 130.11 us |  86.06 us |
+| Int32ValuesJson |            128 |    705.6 us |  43.78 us |  28.96 us |
+|  Int32ValuesXml |            256 |  2,619.3 us | 404.60 us | 267.62 us |
+| Int32ValuesJson |            256 |    780.0 us |  28.38 us |  18.77 us |
+|  Int32ValuesXml |            512 |  4,712.5 us | 137.08 us |  90.67 us |
+| Int32ValuesJson |            512 |    919.8 us | 144.47 us |  95.56 us |
+|  Int32ValuesXml |           1024 |  8,012.5 us | 214.29 us | 141.74 us |
+| Int32ValuesJson |           1024 |  1,266.1 us | 120.41 us |  79.65 us |
+|  Int32ValuesXml |           2048 | 14,420.2 us | 261.61 us | 173.04 us |
+| Int32ValuesJson |           2048 |  1,673.8 us |  93.54 us |  61.87 us |
+|  Int32ValuesXml |           4096 | 27,582.6 us | 249.89 us | 165.29 us |
+| Int32ValuesJson |           4096 |  2,732.6 us | 259.02 us | 171.33 us |
+                        </textarea>
+                            <div class="text-center">
+                                <small class="text-muted">(This information does not leave your browser)</small>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col-md-8 offset-md-2">
                             <div class="row">
@@ -151,7 +148,6 @@
                     <div class="text-center">
                         <button id="copyToClipboardButton" class="btn btn-primary mb-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 512 512">
-                                <!--! Font Awesome Pro 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
                                 <path
                                     d="M224 0c-35.3 0-64 28.7-64 64V288c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64H224zM64 160c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H288c35.3 0 64-28.7 64-64V384H288v64H64V224h64V160H64z" />
                             </svg>
@@ -159,7 +155,6 @@
                         </button>
                         <button id="downloadButton" class="btn btn-primary mb-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 512 512">
-                                <!--! Font Awesome Pro 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
                                 <path
                                     d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64zM432 456c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z" />
                             </svg>
@@ -169,14 +164,15 @@
                 </div>
             </div>
         </main>
-        <footer>
-            <p class="text-center">
-                Made with ☕&❤️ by <a href="https://github.com/yv989c" target="_blank">yv989c</a><br>
-                <span>
-                    Powered by <a href="https://bootswatch.com/" target="_blank">Bootswatch</a>,
-                    <a href="https://www.chartjs.org/" target="_blank">Chart.js</a>,
-                    and <a href="https://fontawesome.com/" target="_blank">Font Awesome</a>
-                </span>
+        <footer class="text-center">
+            <p>
+                Made with ☕&❤️ by <a href="https://github.com/yv989c" target="_blank">yv989c</a>
+            </p>
+            <p>
+                Powered by:<br><a href="https://bootswatch.com/" target="_blank">Bootswatch</a>,
+                <a href="https://www.chartjs.org/" target="_blank">Chart.js</a>,
+                <a href="https://fontawesome.com/" target="_blank">Font Awesome</a>,
+                and <a href="https://github.com/yv989c/ChartsForBenchmarkDotNet" target="_blank">GitHub</a>
             </p>
         </footer>
     </div>
@@ -189,55 +185,3 @@
 </body>
 
 </html>
-<!-- 
-    https://coolors.co/palette/f94144-f3722c-f8961e-f9c74f-90be6d-43aa8b-4d908e-577590
-    https://coolors.co/palette/ff595e-ff924c-ffca3a-c5ca30-8ac926-36949d-1982c4-4267ac-565aa0-6a4c93
-    https://coolors.co/palette/264653-287271-2a9d8f-8ab17d-babb74-e9c46a-efb366-f4a261-ee8959-e76f51
-    https://coolors.co/palette/264653-287271-2a9d8f-8ab17d-e9c46a-f4a261-ee8959-e76f51
--->
-<!--
-            // const categories = new Map();
-
-            // linesWithColumns.forEach(e => {
-            //     if (e === headerRow)
-            //     {
-            //         return;
-            //     }
-
-            //     e.categoryName = '';
-
-            //     for (let i = categoryIndexStart; i <= categoryIndexEnd; i++) {
-            //         const separator = e.categoryName.length > 0 ? ', ' : '';
-            //         e.categoryName += `${separator}${e.columns[i]}`;
-            //     }
-
-            //     let category = categories.get(e.categoryName);
-
-            //     if (typeof(category) === 'undefined'){
-            //         category = {
-            //             name: e.categoryName,
-            //             methods: new Map()
-            //         };
-            //         categories.set(e.categoryName, category);
-            //     }
-
-            //     const methodName = e.columns[methodIndex];
-            //     let method = category.methods.get(methodName);
-
-            //     if (typeof(method) === 'undefined'){
-            //         method = {
-            //             name: methodName,
-            //             values: []
-            //         };
-            //         category.methods.set(methodName, method);
-            //     }
-
-            //     const mean = parseFloat(e.columns[meanIndex].replace(/[^0-9.]/g, ''));
-            //     method.values.push(mean);
-            // });
-
-            // console.log(categories);
-
-
-
--->
