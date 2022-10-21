@@ -21,7 +21,6 @@ class ChartBuilder {
         this._gridLineColor = '';
         this._creditTextColor = '';
         this._useLogarithmicScale = false;
-        Chart.defaults.font.family = 'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"';
         this._chart = getChart();
         this.theme = this.theme;
         function getChart() {
@@ -253,6 +252,7 @@ class ChartBuilder {
 }
 class App {
     constructor() {
+        Chart.defaults.font.family = 'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"';
         const chartWrapper = document.getElementById('chartWrapper');
         const chartCanvas = document.getElementById('chartCanvas');
         const builder = new ChartBuilder(chartCanvas);
@@ -283,6 +283,15 @@ class App {
             link.download = 'chart.png';
             link.href = chartCanvas.toDataURL();
             link.click();
+        });
+        document.addEventListener('readystatechange', () => {
+            if (document.readyState === 'complete') {
+                // Fixes MBC Widget Google Pay bug.
+                const widgetIFrame = document.querySelector('iframe[title*="Buy Me a Coffee"]');
+                if (widgetIFrame !== null) {
+                    widgetIFrame.setAttribute('allow', 'payment');
+                }
+            }
         });
     }
     bindResultsInput(builder) {
