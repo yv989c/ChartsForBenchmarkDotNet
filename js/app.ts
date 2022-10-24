@@ -1,4 +1,4 @@
-var Chart: any;
+var Chart: any, Scale = Chart.Scale, LinearScale = Chart.LinearScale;
 
 interface IBenchmarkResultRow {
     text: string,
@@ -16,6 +16,76 @@ enum Theme {
     Light = 'light'
 }
 
+enum ScaleType {
+    Linear = 'linear',
+    Log10 = 'log10',
+    Log2 = 'log2'
+}
+
+/**
+ * https://www.chartjs.org/docs/master/samples/advanced/derived-axis-type.html#log2-axis-implementation
+ */
+class Log2Axis extends Scale {
+    constructor(cfg: any) {
+        super(cfg);
+        this._startValue = undefined;
+        this._valueRange = 0;
+    }
+
+    parse(raw: unknown, index: number) {
+        const value = LinearScale.prototype.parse.apply(this, [raw, index]);
+        return isFinite(value) && value > 0 ? value : null;
+    }
+
+    determineDataLimits() {
+        const { min, max } = this.getMinMax(true);
+        this.min = isFinite(min) ? Math.max(0, min) : null;
+        this.max = isFinite(max) ? Math.max(0, max) : null;
+    }
+
+    buildTicks() {
+        const ticks = [];
+
+        let power = Math.floor(Math.log2(this.min || 1));
+        let maxPower = Math.ceil(Math.log2(this.max || 2));
+        while (power <= maxPower) {
+            ticks.push({ value: Math.pow(2, power) });
+            power += 1;
+        }
+
+        this.min = ticks[0].value;
+        this.max = ticks[ticks.length - 1].value;
+        return ticks;
+    }
+
+    configure() {
+        const start = this.min;
+
+        super.configure();
+
+        this._startValue = Math.log2(start);
+        this._valueRange = Math.log2(this.max) - Math.log2(start);
+    }
+
+    getPixelForValue(value: number) {
+        if (value === undefined || value === 0) {
+            value = this.min;
+        }
+
+        return this.getPixelForDecimal(value === this.min ? 0
+            : (Math.log2(value) - this._startValue) / this._valueRange);
+    }
+
+    getValueForPixel(pixel: number) {
+        const decimal = this.getDecimalForPixel(pixel);
+        return Math.pow(2, this._startValue + decimal * this._valueRange);
+    }
+}
+
+Log2Axis.id = 'log2';
+Log2Axis.defaults = {};
+Chart.register(Log2Axis);
+
 class ChartBuilder {
     private readonly _chart: any;
     /*
@@ -32,7 +102,7 @@ class ChartBuilder {
     private _xAxeTextColor = '#606060';
     private _gridLineColor = '';
     private _creditTextColor = '';
-    private _useLogarithmicScale = false;
+    private _scaleType = ScaleType.Linear;
 
     get theme() {
         return this._theme;
@@ -54,11 +124,11 @@ class ChartBuilder {
         this.render();
     }
 
-    get useLogarithmicScale() {
-        return this._useLogarithmicScale;
+    get scaleType() {
+        return this._scaleType;
     }
-    set useLogarithmicScale(value) {
-        this._useLogarithmicScale = value;
+    set scaleType(value) {
+        this._scaleType = value;
         this.render();
     }
 
@@ -258,7 +328,18 @@ class ChartBuilder {
         yAxe.title.text = benchmarkResult.scale;
         yAxe.title.color = this._yAxeTextColor;
         yAxe.grid.color = this._gridLineColor;
-        yAxe.type = this.useLogarithmicScale ? 'logarithmic' : 'linear';
+
+        switch (this.scaleType) {
+            case ScaleType.Log10:
+                yAxe.type = 'logarithmic';
+                break;
+            case ScaleType.Log2:
+                yAxe.type = 'log2';
+                break;
+            default:
+                yAxe.type = 'linear';
+                break;
+        }
 
         xAxe.title.text = benchmarkResult.categoriesTitle;
         xAxe.title.color = this._xAxeTextColor;
@@ -326,8 +407,8 @@ class App {
             }
         });
 
-        document.getElementById('logarithmicOptionCheckInput')!.addEventListener('input', e => {
-            builder.useLogarithmicScale = (e.target as HTMLInputElement).checked;
+        document.getElementById('scaleRadioContainer')!.addEventListener('input', e => {
+            builder.scaleType = (e.target as HTMLInputElement).value as ScaleType;
         });
 
         document.getElementById('copyToClipboardButton')!.addEventListener('click', e => {
@@ -378,7 +459,7 @@ class App {
         const widthRangeInput = document.getElementById('widthRangeInput') as HTMLInputElement;
         const heightRangeInput = document.getElementById('heightRangeInput') as HTMLInputElement;
 
-        if (window.screen.width < 992) {
+        if (document.body.clientWidth < 992) {
             widthRangeInput.value = '1';
         }
 

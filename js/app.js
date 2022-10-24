@@ -1,10 +1,67 @@
 "use strict";
-var Chart;
+var Chart, Scale = Chart.Scale, LinearScale = Chart.LinearScale;
 var Theme;
 (function (Theme) {
     Theme["Dark"] = "dark";
     Theme["Light"] = "light";
 })(Theme || (Theme = {}));
+var ScaleType;
+(function (ScaleType) {
+    ScaleType["Linear"] = "linear";
+    ScaleType["Log10"] = "log10";
+    ScaleType["Log2"] = "log2";
+})(ScaleType || (ScaleType = {}));
+/**
+ * https://www.chartjs.org/docs/master/samples/advanced/derived-axis-type.html#log2-axis-implementation
+ */
+class Log2Axis extends Scale {
+    constructor(cfg) {
+        super(cfg);
+        this._startValue = undefined;
+        this._valueRange = 0;
+    }
+    parse(raw, index) {
+        const value = LinearScale.prototype.parse.apply(this, [raw, index]);
+        return isFinite(value) && value > 0 ? value : null;
+    }
+    determineDataLimits() {
+        const { min, max } = this.getMinMax(true);
+        this.min = isFinite(min) ? Math.max(0, min) : null;
+        this.max = isFinite(max) ? Math.max(0, max) : null;
+    }
+    buildTicks() {
+        const ticks = [];
+        let power = Math.floor(Math.log2(this.min || 1));
+        let maxPower = Math.ceil(Math.log2(this.max || 2));
+        while (power <= maxPower) {
+            ticks.push({ value: Math.pow(2, power) });
+            power += 1;
+        }
+        this.min = ticks[0].value;
+        this.max = ticks[ticks.length - 1].value;
+        return ticks;
+    }
+    configure() {
+        const start = this.min;
+        super.configure();
+        this._startValue = Math.log2(start);
+        this._valueRange = Math.log2(this.max) - Math.log2(start);
+    }
+    getPixelForValue(value) {
+        if (value === undefined || value === 0) {
+            value = this.min;
+        }
+        return this.getPixelForDecimal(value === this.min ? 0
+            : (Math.log2(value) - this._startValue) / this._valueRange);
+    }
+    getValueForPixel(pixel) {
+        const decimal = this.getDecimalForPixel(pixel);
+        return Math.pow(2, this._startValue + decimal * this._valueRange);
+    }
+}
+Log2Axis.id = 'log2';
+Log2Axis.defaults = {};
+Chart.register(Log2Axis);
 class ChartBuilder {
     constructor(canvas) {
         /*
@@ -20,7 +77,7 @@ class ChartBuilder {
         this._xAxeTextColor = '#606060';
         this._gridLineColor = '';
         this._creditTextColor = '';
-        this._useLogarithmicScale = false;
+        this._scaleType = ScaleType.Linear;
         this._chart = getChart();
         this.theme = this.theme;
         function getChart() {
@@ -77,11 +134,11 @@ class ChartBuilder {
         this._theme = value;
         this.render();
     }
-    get useLogarithmicScale() {
-        return this._useLogarithmicScale;
+    get scaleType() {
+        return this._scaleType;
     }
-    set useLogarithmicScale(value) {
-        this._useLogarithmicScale = value;
+    set scaleType(value) {
+        this._scaleType = value;
         this.render();
     }
     get chartPlugins() {
@@ -214,7 +271,17 @@ class ChartBuilder {
         yAxe.title.text = benchmarkResult.scale;
         yAxe.title.color = this._yAxeTextColor;
         yAxe.grid.color = this._gridLineColor;
-        yAxe.type = this.useLogarithmicScale ? 'logarithmic' : 'linear';
+        switch (this.scaleType) {
+            case ScaleType.Log10:
+                yAxe.type = 'logarithmic';
+                break;
+            case ScaleType.Log2:
+                yAxe.type = 'log2';
+                break;
+            default:
+                yAxe.type = 'linear';
+                break;
+        }
         xAxe.title.text = benchmarkResult.categoriesTitle;
         xAxe.title.color = this._xAxeTextColor;
         xAxe.grid.color = this._gridLineColor;
@@ -269,8 +336,8 @@ class App {
                     break;
             }
         });
-        document.getElementById('logarithmicOptionCheckInput').addEventListener('input', e => {
-            builder.useLogarithmicScale = e.target.checked;
+        document.getElementById('scaleRadioContainer').addEventListener('input', e => {
+            builder.scaleType = e.target.value;
         });
         document.getElementById('copyToClipboardButton').addEventListener('click', e => {
             chartCanvas.toBlob(blob => {
@@ -311,7 +378,7 @@ class App {
     bindSizeControls(chartWrapper) {
         const widthRangeInput = document.getElementById('widthRangeInput');
         const heightRangeInput = document.getElementById('heightRangeInput');
-        if (window.screen.width < 992) {
+        if (document.body.clientWidth < 992) {
             widthRangeInput.value = '1';
         }
         updateWidth();
