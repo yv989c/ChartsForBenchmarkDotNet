@@ -1,92 +1,6 @@
-var Chart: any, Scale = Chart.Scale, LinearScale = Chart.LinearScale;
+declare var Chart: any;
 
-interface IBenchmarkResultRow {
-    text: string,
-    columns: string[]
-}
-
-interface IMethodValue {
-    category: string,
-    value: number,
-    scale: string
-}
-
-enum Theme {
-    Dark = 'dark',
-    Light = 'light'
-}
-
-enum ScaleType {
-    Linear = 'linear',
-    Log10 = 'log10',
-    Log2 = 'log2'
-}
-
-/**
- * https://www.chartjs.org/docs/master/samples/advanced/derived-axis-type.html#log2-axis-implementation
- */
-class Log2Axis extends Scale {
-    constructor(cfg: any) {
-        super(cfg);
-        this._startValue = undefined;
-        this._valueRange = 0;
-    }
-
-    parse(raw: unknown, index: number) {
-        const value = LinearScale.prototype.parse.apply(this, [raw, index]);
-        return isFinite(value) && value > 0 ? value : null;
-    }
-
-    determineDataLimits() {
-        const { min, max } = this.getMinMax(true);
-        this.min = isFinite(min) ? Math.max(0, min) : null;
-        this.max = isFinite(max) ? Math.max(0, max) : null;
-    }
-
-    buildTicks() {
-        const ticks = [];
-
-        let power = Math.floor(Math.log2(this.min || 1));
-        let maxPower = Math.ceil(Math.log2(this.max || 2));
-        while (power <= maxPower) {
-            ticks.push({ value: Math.pow(2, power) });
-            power += 1;
-        }
-
-        this.min = ticks[0].value;
-        this.max = ticks[ticks.length - 1].value;
-        return ticks;
-    }
-
-    configure() {
-        const start = this.min;
-
-        super.configure();
-
-        this._startValue = Math.log2(start);
-        this._valueRange = Math.log2(this.max) - Math.log2(start);
-    }
-
-    getPixelForValue(value: number) {
-        if (value === undefined || value === 0) {
-            value = this.min;
-        }
-
-        return this.getPixelForDecimal(value === this.min ? 0
-            : (Math.log2(value) - this._startValue) / this._valueRange);
-    }
-
-    getValueForPixel(pixel: number) {
-        const decimal = this.getDecimalForPixel(pixel);
-        return Math.pow(2, this._startValue + decimal * this._valueRange);
-    }
-}
-
-Log2Axis.id = 'log2';
-Log2Axis.defaults = {};
-Chart.register(Log2Axis);
-
-class ChartBuilder {
+export class ChartBuilder {
     private readonly _chart: any;
     /*
     https://coolors.co/palette/f94144-f3722c-f8961e-f9c74f-90be6d-43aa8b-4d908e-577590
@@ -384,103 +298,24 @@ class ChartBuilder {
     }
 }
 
-class App {
-    constructor() {
-        Chart.defaults.font.family = 'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"';
-
-        const chartWrapper = document.getElementById('chartWrapper')!;
-        const chartCanvas = document.getElementById('chartCanvas') as HTMLCanvasElement;
-        const builder = new ChartBuilder(chartCanvas);
-
-        this.bindResultsInput(builder);
-        this.bindSizeControls(chartWrapper);
-
-        document.getElementById('themeRadioContainer')!.addEventListener('input', e => {
-            builder.theme = (e.target as HTMLInputElement).value as Theme;
-            switch (builder.theme) {
-                case Theme.Dark:
-                    chartWrapper.classList.remove('bg-light');
-                    break;
-                case Theme.Light:
-                    chartWrapper.classList.add('bg-light');
-                    break;
-            }
-        });
-
-        document.getElementById('scaleRadioContainer')!.addEventListener('input', e => {
-            builder.scaleType = (e.target as HTMLInputElement).value as ScaleType;
-        });
-
-        document.getElementById('copyToClipboardButton')!.addEventListener('click', e => {
-            chartCanvas.toBlob(blob => {
-                const item = new ClipboardItem({ 'image/png': blob! });
-                navigator.clipboard.write([item]);
-            });
-        });
-
-        document.getElementById('downloadButton')!.addEventListener('click', e => {
-            var link = document.createElement('a');
-            link.download = 'chart.png';
-            link.href = chartCanvas.toDataURL();
-            link.click();
-        });
-
-        document.addEventListener('readystatechange', () => {
-            if (document.readyState === 'complete') {
-                // Fixes MBC Widget Google Pay bug.
-                const widgetIFrame = document.querySelector('iframe[title*="Buy Me a Coffee"]');
-                if (widgetIFrame !== null) {
-                    widgetIFrame.setAttribute('allow', 'payment');
-                }
-            }
-        });
-    }
-
-    private bindResultsInput(builder: ChartBuilder) {
-        const resultsInput = document.getElementById('resultsInput') as HTMLInputElement;
-
-        resultsInput.addEventListener('input', () => {
-            loadBenchmarkResult();
-        });
-
-        resultsInput.addEventListener('click', () => {
-            resultsInput.value = '';
-            loadBenchmarkResult();
-        }, { once: true });
-
-        loadBenchmarkResult();
-
-        function loadBenchmarkResult() {
-            builder.loadBenchmarkResult(resultsInput.value);
-        }
-    }
-
-    private bindSizeControls(chartWrapper: HTMLElement) {
-        const widthRangeInput = document.getElementById('widthRangeInput') as HTMLInputElement;
-        const heightRangeInput = document.getElementById('heightRangeInput') as HTMLInputElement;
-
-        if (document.body.clientWidth < 992) {
-            widthRangeInput.value = '1';
-        }
-
-        updateWidth();
-        updateHeight();
-
-        widthRangeInput.addEventListener('input', updateWidth);
-        heightRangeInput.addEventListener('input', updateHeight);
-
-        function updateWidth() {
-            const value = `${parseFloat(widthRangeInput.value) * 100}%`;
-            widthRangeInput.title = value;
-            chartWrapper.style.width = value;
-        }
-
-        function updateHeight() {
-            const value = parseFloat(heightRangeInput.value);
-            heightRangeInput.title = `${value * 100}%`;
-            chartWrapper.style.height = `${value * 1600}px`;
-        }
-    }
+interface IBenchmarkResultRow {
+    text: string,
+    columns: string[]
 }
 
-new App();
+interface IMethodValue {
+    category: string,
+    value: number,
+    scale: string
+}
+
+export enum Theme {
+    Dark = 'dark',
+    Light = 'light'
+}
+
+export enum ScaleType {
+    Linear = 'linear',
+    Log10 = 'log10',
+    Log2 = 'log2'
+}
