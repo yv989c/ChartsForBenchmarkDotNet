@@ -563,7 +563,8 @@ define("chart-builder", ["require", "exports"], function (require, exports) {
                     const separator = category.length > 0 ? ', ' : '';
                     category += `${separator}${row.columns[i]}`;
                 }
-                const methodName = row.columns[methodIndex];
+                const runtimeName = runtimeIndex >= 0 ? row.columns[runtimeIndex] : null;
+                const methodName = row.columns[methodIndex] + (runtimeName !== null ? ` (${runtimeName})` : '');
                 let methodValues = methods.get(methodName);
                 if (typeof (methodValues) === 'undefined') {
                     methodValues = [];
@@ -604,7 +605,8 @@ define("chart-builder", ["require", "exports"], function (require, exports) {
                     .map(i => ({
                     name: i[0],
                     values: i[1]
-                }));
+                }))
+                    .sort((a, b) => a.name.localeCompare(b.name));
             }
             function inferScale() {
                 for (const method of methods) {

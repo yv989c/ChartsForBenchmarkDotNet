@@ -142,7 +142,8 @@ export class ChartBuilder {
                 category += `${separator}${row.columns[i]}`;
             }
 
-            const methodName = row.columns[methodIndex];
+            const runtimeName = runtimeIndex >= 0 ? row.columns[runtimeIndex] : null;
+            const methodName = row.columns[methodIndex] + (runtimeName !== null ? ` (${runtimeName})` : '');
             let methodValues = methods.get(methodName);
 
             if (typeof (methodValues) === 'undefined') {
@@ -190,7 +191,8 @@ export class ChartBuilder {
                 .map(i => ({
                     name: i[0],
                     values: i[1]
-                }));
+                }))
+                .sort((a, b) => a.name.localeCompare(b.name));
         }
 
         function inferScale() {
