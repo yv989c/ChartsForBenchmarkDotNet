@@ -2,7 +2,7 @@
 
 A simple web app that charts your [BenchmarkDotNet](https://benchmarkdotnet.org/) console results. The chart can then be copied to your clipboard or downloaded as a PNG image.
 
-It currently understands standard results like the one shown below. Any columns between `Method` and `Mean` are considered categories in the chart across the x-axis. These columns are typically created via properties decorated with the `Params` attribute in your benchmark.
+It currently understands standard results like the one shown below. Any columns between `Method`/`Runtime` and `Mean` are considered categories in the chart across the x-axis. These columns are typically created via properties decorated with the `Params` attribute in your benchmark.
 
 
 ## How do I use it?
