@@ -2,18 +2,28 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A simple web app that charts your BenchmarkDotNet console results.">
     <title>Charts for BenchmarkDotNet</title>
-    <link rel="icon"
-        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' fill='%23f94144'%3E%3Cpath d='M32 32c17.7 0 32 14.3 32 32V400c0 8.8 7.2 16 16 16H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H80c-44.2 0-80-35.8-80-80V64C0 46.3 14.3 32 32 32zM160 224c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32s-32-14.3-32-32V256c0-17.7 14.3-32 32-32zm128-64V320c0 17.7-14.3 32-32 32s-32-14.3-32-32V160c0-17.7 14.3-32 32-32s32 14.3 32 32zm64 32c17.7 0 32 14.3 32 32v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V224c0-17.7 14.3-32 32-32zM480 96V320c0 17.7-14.3 32-32 32s-32-14.3-32-32V96c0-17.7 14.3-32 32-32s32 14.3 32 32z' /%3E%3C/svg%3E">
+    <meta name="description" content="A simple web app that charts your BenchmarkDotNet console results.">
+    <meta name="robots" content="index, follow">
+    <meta name="msapplication-TileColor" content="#333333">
+    <meta name="msapplication-config" content="browserconfig.xml">
+    <meta name="theme-color" content="#272b30">
     <link rel="canonical" href="https://chartbenchmark.net">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png">
+    <link rel="mask-icon" href="/images/icons/safari-pinned-tab.svg" color="#f94144">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.2.2/slate/bootstrap.min.css"
         integrity="sha512-1pL5JraDFnKQpIwmTl0kunghVQj0wSv82iT4zHeP32BpkJuvLAgR5kAhGbwXUmAzYOtVyDfzhpbwk5vIK+uIhQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
+        textarea {
+            white-space: pre;
+        }
+
         .input-group .form-range {
             height: initial;
         }
@@ -53,7 +63,7 @@
                     </div>
                     <div class="row">
                         <div class="col">
-                            <textarea name="" id="resultsInput" rows="10" class="w-100 font-monospace text-nowrap"
+                            <textarea name="" id="resultsInput" rows="10" class="w-100 font-monospace"
                                 autocomplete="off" spellcheck="false">
 BenchmarkDotNet=v0.13.2, OS=Windows 11 (10.0.22621.674)
 AMD Ryzen 9 6900HS Creator Edition, 1 CPU, 16 logical and 8 physical cores
