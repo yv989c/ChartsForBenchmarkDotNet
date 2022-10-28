@@ -554,6 +554,7 @@ define("chart-builder", ["require", "exports"], function (require, exports) {
             const categoryIndexStart = Math.max(methodIndex, runtimeIndex) + 1;
             const categoryIndexEnd = meanIndex - 1;
             const methods = new Map();
+            const orderByMethod = new Map();
             for (const row of rows) {
                 if (row === headerRow) {
                     continue;
@@ -564,14 +565,24 @@ define("chart-builder", ["require", "exports"], function (require, exports) {
                     category += `${separator}${row.columns[i]}`;
                 }
                 const runtimeName = runtimeIndex >= 0 ? row.columns[runtimeIndex] : null;
-                const methodName = row.columns[methodIndex] + (runtimeName !== null ? ` (${runtimeName})` : '');
-                let methodValues = methods.get(methodName);
-                if (typeof (methodValues) === 'undefined') {
-                    methodValues = [];
-                    methods.set(methodName, methodValues);
+                const methodNamePrefix = row.columns[methodIndex];
+                const methodName = methodNamePrefix + (runtimeName !== null ? ` (${runtimeName})` : '');
+                let methodInfo = methods.get(methodName);
+                if (typeof (methodInfo) === 'undefined') {
+                    let methodOrder = orderByMethod.get(methodNamePrefix);
+                    if (typeof (methodOrder) === 'undefined') {
+                        methodOrder = orderByMethod.size;
+                        orderByMethod.set(methodNamePrefix, methodOrder);
+                    }
+                    methodInfo = {
+                        name: methodName,
+                        order: methodOrder,
+                        values: []
+                    };
+                    methods.set(methodName, methodInfo);
                 }
                 const valueAndScale = getValueAndScale(row.columns[meanIndex]);
-                methodValues.push({
+                methodInfo.values.push({
                     category: category,
                     value: valueAndScale.value,
                     scale: valueAndScale.scale
@@ -586,7 +597,7 @@ define("chart-builder", ["require", "exports"], function (require, exports) {
             function getCategories() {
                 const categories = new Set();
                 for (const method of methods) {
-                    for (const value of method[1]) {
+                    for (const value of method[1].values) {
                         categories.add(value.category);
                     }
                 }
@@ -602,15 +613,12 @@ define("chart-builder", ["require", "exports"], function (require, exports) {
             }
             function getMethods() {
                 return [...methods]
-                    .map(i => ({
-                    name: i[0],
-                    values: i[1]
-                }))
-                    .sort((a, b) => a.name.localeCompare(b.name));
+                    .map(i => i[1])
+                    .sort((a, b) => a.order - b.order);
             }
             function inferScale() {
                 for (const method of methods) {
-                    for (const value of method[1]) {
+                    for (const value of method[1].values) {
                         switch (value.scale) {
                             case 'us':
                             case 'μs':
