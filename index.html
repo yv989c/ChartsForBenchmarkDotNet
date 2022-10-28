@@ -63,7 +63,7 @@
                     </div>
                     <div class="row">
                         <div class="col">
-                            <textarea name="" id="resultsInput" rows="10" class="w-100 font-monospace"
+                            <textarea id="resultsInput" rows="10" class="w-100 font-monospace"
                                 autocomplete="off" spellcheck="false">
 BenchmarkDotNet=v0.13.2, OS=Windows 11 (10.0.22621.674)
 AMD Ryzen 9 6900HS Creator Edition, 1 CPU, 16 logical and 8 physical cores
@@ -98,70 +98,72 @@ IterationCount=10  RunStrategy=Monitoring  WarmupCount=1
                             </p>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-12 col-xl-12 col-xxl-7 mb-2">
-                            <label class="form-label" for="widthRangeInput">Size</label>
-                            <div class="d-flex justify-content-between">
-                                <div class="input-group input-group-sm me-2">
-                                    <span id="widthSpan" class="input-group-text">Width</span>
-                                    <input type="range" id="widthRangeInput" min="0" max="1" step="0.05" value="0.5"
-                                        class="form-control form-range" aria-label="Chart Width"
-                                        aria-describedby="widthSpan">
+                    <form autocomplete="off">
+                        <div class="row">
+                            <div class="col-12 col-xl-12 col-xxl-7 mb-2">
+                                <label class="form-label" for="widthRangeInput">Size</label>
+                                <div class="d-flex justify-content-between">
+                                    <div class="input-group input-group-sm me-2">
+                                        <span id="widthSpan" class="input-group-text">Width</span>
+                                        <input type="range" id="widthRangeInput" min="0" max="1" step="0.05" value="0.5"
+                                            class="form-control form-range" aria-label="Chart Width"
+                                            aria-describedby="widthSpan">
+                                    </div>
+                                    <div class="input-group input-group-sm">
+                                        <span id="heightSpan" class="input-group-text">Height</span>
+                                        <input type="range" id="heightRangeInput" min="0" max="1" step="0.05"
+                                            value="0.25" class="form-control form-range" aria-label="Chart Height"
+                                            aria-describedby="heightSpan">
+                                    </div>
                                 </div>
-                                <div class="input-group input-group-sm">
-                                    <span id="heightSpan" class="input-group-text">Height</span>
-                                    <input type="range" id="heightRangeInput" min="0" max="1" step="0.05" value="0.25"
-                                        class="form-control form-range" aria-label="Chart Height"
-                                        aria-describedby="heightSpan">
+                            </div>
+                            <div class="col-6 col-xl-6 col-xxl-3">
+                                <label class="form-label">Time Scale</label>
+                                <div id="scaleRadioContainer">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="scaleRadio"
+                                            id="linearScaleRadio" value="linear" checked>
+                                        <label class="form-check-label" for="linearScaleRadio">
+                                            Linear
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="scaleRadio"
+                                            id="log10ScaleRadio" value="log10">
+                                        <label class="form-check-label" for="log10ScaleRadio">
+                                            Log10
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline me-0">
+                                        <input class="form-check-input" type="radio" name="scaleRadio"
+                                            id="log2ScaleRadio" value="log2">
+                                        <label class="form-check-label" for="log2ScaleRadio">
+                                            Log2
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-xl-6 col-xxl-2">
+                                <label class="form-label">Theme</label>
+                                <div id="themeRadioContainer">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="themeRadio"
+                                            id="darkThemeRadio" value="dark" checked>
+                                        <label class="form-check-label" for="darkThemeRadio">
+                                            Dark
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline me-0">
+                                        <input class="form-check-input" type="radio" name="themeRadio"
+                                            id="lightThemeRadio" value="light">
+                                        <label class="form-check-label" for="lightThemeRadio">
+                                            Light
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-6 col-xl-6 col-xxl-3">
-                            <label class="form-label">Time Scale</label>
-                            <div id="scaleRadioContainer">
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="scaleRadio" id="linearScaleRadio"
-                                        value="linear" checked>
-                                    <label class="form-check-label" for="linearScaleRadio">
-                                        Linear
-                                    </label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="scaleRadio" id="log10ScaleRadio"
-                                        value="log10">
-                                    <label class="form-check-label" for="log10ScaleRadio">
-                                        Log10
-                                    </label>
-                                </div>
-                                <div class="form-check form-check-inline me-0">
-                                    <input class="form-check-input" type="radio" name="scaleRadio" id="log2ScaleRadio"
-                                        value="log2">
-                                    <label class="form-check-label" for="log2ScaleRadio">
-                                        Log2
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-xl-6 col-xxl-2">
-                            <label class="form-label">Theme</label>
-                            <div id="themeRadioContainer">
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="themeRadio" id="darkThemeRadio"
-                                        value="dark" checked>
-                                    <label class="form-check-label" for="darkThemeRadio">
-                                        Dark
-                                    </label>
-                                </div>
-                                <div class="form-check form-check-inline me-0">
-                                    <input class="form-check-input" type="radio" name="themeRadio" id="lightThemeRadio"
-                                        value="light">
-                                    <label class="form-check-label" for="lightThemeRadio">
-                                        Light
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    </form>
                     <hr>
                     <div id="chartWrapper" class="mx-auto position-relative rounded" style="height: 400px; width: 50%;">
                         <canvas id="chartCanvas"></canvas>
