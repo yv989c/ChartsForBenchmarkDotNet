@@ -128,6 +128,8 @@ export class ChartBuilder {
         const categoryIndexStart = Math.max(methodIndex, runtimeIndex) + 1;
         const categoryIndexEnd = meanIndex - 1;
 
+        const allocatedIndex = headerRow.columns.indexOf('Allocated', meanIndex);
+
         const methods = new Map<string, IMethodInfo>();
         const orderByMethod = new Map<string, number>();
 
@@ -160,33 +162,35 @@ export class ChartBuilder {
                 methodInfo = {
                     name: methodName,
                     order: methodOrder,
-                    values: []
+                    results: []
                 };
 
                 methods.set(methodName, methodInfo);
             }
 
-            const valueAndScale = getValueAndScale(row.columns[meanIndex]);
+            const mean = getMeasure(row.columns[meanIndex]);
 
-            methodInfo.values.push({
+            const result: IMethodResult = {
                 category: category,
-                value: valueAndScale.value,
-                scale: valueAndScale.scale
-            });
+                mean: mean,
+                allocated: allocatedIndex >= 0 ? getMeasure(row.columns[allocatedIndex]) : null
+            };
+
+            methodInfo.results.push(result);
         }
 
         return {
             categories: getCategories(),
             categoriesTitle: getCategoriesTitle(),
             methods: getMethods(),
-            scale: inferScale()
+            unit: inferUnit()
         };
 
         function getCategories() {
             const categories = new Set<string>();
             for (const method of methods) {
-                for (const value of method[1].values) {
-                    categories.add(value.category);
+                for (const result of method[1].results) {
+                    categories.add(result.category);
                 }
             }
             return [...categories];
@@ -207,10 +211,10 @@ export class ChartBuilder {
                 .sort((a, b) => a.order - b.order);
         }
 
-        function inferScale() {
+        function inferUnit() {
             for (const method of methods) {
-                for (const value of method[1].values) {
-                    switch (value.scale) {
+                for (const result of method[1].results) {
+                    switch (result.mean.unit) {
                         case 'us':
                         case 'μs':
                             return 'Microseconds';
@@ -219,19 +223,19 @@ export class ChartBuilder {
                         case 's':
                             return 'Seconds';
                         default:
-                            return value.scale;
+                            return result.mean.unit;
                     }
                 }
             }
         }
 
-        function getValueAndScale(formattedNumber: string) {
-            const scaleSeparatorIndex = formattedNumber.indexOf(' ');
-            const scale = scaleSeparatorIndex >= 0 ? formattedNumber.substring(scaleSeparatorIndex).trim() : '';
+        function getMeasure(formattedNumber: string): IMeasure {
+            const unitSeparatorIndex = formattedNumber.indexOf(' ');
+            const unit = unitSeparatorIndex >= 0 ? formattedNumber.substring(unitSeparatorIndex).trim() : '';
             const value = parseFloat(formattedNumber.replace(/[^0-9.]/g, ''));
             return {
                 value,
-                scale
+                unit
             }
         }
     }
@@ -253,7 +257,7 @@ export class ChartBuilder {
 
         this.chartPlugins.subtitle.color = this._creditTextColor;
 
-        yAxe.title.text = benchmarkResult.scale;
+        yAxe.title.text = benchmarkResult.unit;
         yAxe.title.color = this._yAxeTextColor;
         yAxe.grid.color = this._gridLineColor;
 
@@ -283,19 +287,44 @@ export class ChartBuilder {
         const colors = this._colors;
         let colorIndex = 0;
 
-        chartData.datasets = benchmarkResult.methods
+        const datasets = benchmarkResult.methods
             .map(m => ({
                 label: m.name,
-                data: getData(m.values),
-                backgroundColor: getNextColor()
+                data: getData(m.results, r => r.mean.value),
+                backgroundColor: getNextColor(),
+                order: 1
             }));
 
-        function getData(values: IMethodValue[]) {
+        // const r =
+        //     benchmarkResult.methods
+        //     .map(i=> [].concat(...(i.results as any) ))
+        //     .filter(i=>i.results.reduce)
+        //     .map(m => ({
+        //         label: m.name,
+        //         data: getData(m.results, r => r.mean.value),
+        //         backgroundColor: getNextColor()
+        //     }));
+
+        // datasets.push(
+        //     ...benchmarkResult.methods
+        //         .filter(i => i.results.some(i => i.allocated !== null))
+        //         .map(m => ({
+        //             label: m.name,
+        //             data: getData(m.results, r => r.allocated!.value),
+        //             backgroundColor: getNextColor(),
+        //             // type: 'line',
+        //             order: 0
+        //         }))
+        // );
+
+        chartData.datasets = datasets;
+
+        function getData(results: IMethodResult[], getResultCallback: (r: IMethodResult) => number) {
             const data: number[] = new Array(indexByCategory.size);
-            for (const value of values) {
-                const index = indexByCategory.get(value.category);
+            for (const result of results) {
+                const index = indexByCategory.get(result.category);
                 if (index !== undefined) {
-                    data[index] = value.value;
+                    data[index] = getResultCallback(result);
                 }
             }
             return data;
@@ -317,16 +346,21 @@ interface IBenchmarkResultRow {
     columns: string[]
 }
 
-interface IMethodValue {
-    category: string,
+interface IMeasure {
     value: number,
-    scale: string
+    unit: string
+}
+
+interface IMethodResult {
+    category: string,
+    mean: IMeasure,
+    allocated: IMeasure | null
 }
 
 interface IMethodInfo {
     name: string;
     order: number;
-    values: IMethodValue[];
+    results: IMethodResult[];
 }
 
 export enum Theme {
