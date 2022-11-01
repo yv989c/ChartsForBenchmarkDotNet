@@ -65,33 +65,20 @@
                         <div class="col">
                             <textarea id="resultsInput" rows="10" class="w-100 font-monospace"
                                 autocomplete="off" spellcheck="false">
-BenchmarkDotNet=v0.13.2, OS=Windows 11 (10.0.22621.674)
-AMD Ryzen 9 6900HS Creator Edition, 1 CPU, 16 logical and 8 physical cores
-.NET SDK=6.0.401
-    [Host]     : .NET 6.0.9 (6.0.922.41905), X64 RyuJIT AVX2
-    Job-MLMWYV : .NET 6.0.9 (6.0.922.41905), X64 RyuJIT AVX2
-
-Runtime=.NET 6.0  Server=True  InvocationCount=32
-IterationCount=10  RunStrategy=Monitoring  WarmupCount=1
-
-|          Method | NumberOfValues |        Mean |     Error |    StdDev |
-|---------------- |--------------- |------------:|----------:|----------:|
-|  Int32ValuesXml |             32 |  1,031.3 us | 112.23 us |  74.23 us |
-| Int32ValuesJson |             32 |    683.1 us |  20.65 us |  13.66 us |
-|  Int32ValuesXml |             64 |  1,289.4 us | 169.78 us | 112.30 us |
-| Int32ValuesJson |             64 |    710.6 us |  33.60 us |  22.23 us |
-|  Int32ValuesXml |            128 |  1,717.3 us | 130.11 us |  86.06 us |
-| Int32ValuesJson |            128 |    705.6 us |  43.78 us |  28.96 us |
-|  Int32ValuesXml |            256 |  2,619.3 us | 404.60 us | 267.62 us |
-| Int32ValuesJson |            256 |    780.0 us |  28.38 us |  18.77 us |
-|  Int32ValuesXml |            512 |  4,712.5 us | 137.08 us |  90.67 us |
-| Int32ValuesJson |            512 |    919.8 us | 144.47 us |  95.56 us |
-|  Int32ValuesXml |           1024 |  8,012.5 us | 214.29 us | 141.74 us |
-| Int32ValuesJson |           1024 |  1,266.1 us | 120.41 us |  79.65 us |
-|  Int32ValuesXml |           2048 | 14,420.2 us | 261.61 us | 173.04 us |
-| Int32ValuesJson |           2048 |  1,673.8 us |  93.54 us |  61.87 us |
-|  Int32ValuesXml |           4096 | 27,582.6 us | 249.89 us | 165.29 us |
-| Int32ValuesJson |           4096 |  2,732.6 us | 259.02 us | 171.33 us |
+|          Method |  Runtime | NumberOfValues |        Mean |     Error |    StdDev | Allocated |
+|---------------- |--------- |--------------- |------------:|----------:|----------:|----------:|
+|  **Int32ValuesXml** | **.NET 5.0** |            **128** |  **1,829.6 μs** |  **81.87 μs** |  **54.15 μs** | **114.63 KB** |
+| Int32ValuesJson | .NET 5.0 |            128 |    898.0 μs |  88.93 μs |  58.82 μs | 112.38 KB |
+|  Int32ValuesXml | .NET 6.0 |            128 |  1,864.2 μs | 186.75 μs | 123.52 μs | 114.69 KB |
+| Int32ValuesJson | .NET 6.0 |            128 |  1,047.4 μs | 125.46 μs |  82.98 μs | 114.13 KB |
+|  **Int32ValuesXml** | **.NET 5.0** |            **512** |  **5,174.0 μs** | **294.64 μs** | **194.88 μs** | **128.56 KB** |
+| Int32ValuesJson | .NET 5.0 |            512 |  1,289.8 μs | 251.38 μs | 166.28 μs | 119.78 KB |
+|  Int32ValuesXml | .NET 6.0 |            512 |  5,090.9 μs | 339.77 μs | 224.74 μs | 129.94 KB |
+| Int32ValuesJson | .NET 6.0 |            512 |  1,182.0 μs | 176.50 μs | 116.74 μs | 121.58 KB |
+|  **Int32ValuesXml** | **.NET 5.0** |           **2048** | **15,266.8 μs** | **373.36 μs** | **246.95 μs** | **179.37 KB** |
+| Int32ValuesJson | .NET 5.0 |           2048 |  2,634.3 μs | 383.80 μs | 253.86 μs | 155.36 KB |
+|  Int32ValuesXml | .NET 6.0 |           2048 | 15,278.6 μs | 359.64 μs | 237.88 μs | 178.74 KB |
+| Int32ValuesJson | .NET 6.0 |           2048 |  2,221.8 μs | 314.54 μs | 208.05 μs | 156.11 KB |                                
                             </textarea>
                             <p class="text-center">
                                 <small class="text-muted">(This information does not leave your browser.)</small>
@@ -118,7 +105,7 @@ IterationCount=10  RunStrategy=Monitoring  WarmupCount=1
                                 </div>
                             </div>
                             <div class="col-6 col-xl-6 col-xxl-3">
-                                <label class="form-label">Time Scale</label>
+                                <label class="form-label">Scale Mode</label>
                                 <div id="scaleRadioContainer">
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" name="scaleRadio"

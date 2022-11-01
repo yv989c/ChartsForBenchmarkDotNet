@@ -12,8 +12,14 @@ export class ChartBuilder {
 
     private _benchmarkResultRows: IBenchmarkResultRow[] = [];
     private _theme = Theme.Dark;
-    private _yAxeTextColor = '#606060';
-    private _xAxeTextColor = '#606060';
+    private _yAxisTextColor = '#606060';
+
+    private _y2AxisBaseColor = '#A600FF';
+    private _y2AxisGridLineColor = this._y2AxisBaseColor;
+    private _y2AxisTextColor = this._y2AxisBaseColor;
+    private _y2AxisBarColor = Chart.helpers.color(this._y2AxisBaseColor).clearer(0.3).hexString();
+
+    private _xAxisTextColor = '#606060';
     private _gridLineColor = '';
     private _creditTextColor = '';
     private _scaleType = ScaleType.Linear;
@@ -26,10 +32,12 @@ export class ChartBuilder {
             case Theme.Dark:
                 this._creditTextColor = '#66666675';
                 this._gridLineColor = '#66666638';
+                this._y2AxisGridLineColor = Chart.helpers.color(this._y2AxisBaseColor).clearer(0.5).hexString();
                 break;
             case Theme.Light:
                 this._creditTextColor = '#00000040';
                 this._gridLineColor = '#0000001a';
+                this._y2AxisGridLineColor = Chart.helpers.color(this._y2AxisBaseColor).clearer(0.75).hexString();
                 break;
             default:
                 break;
@@ -63,6 +71,7 @@ export class ChartBuilder {
                 type: 'bar',
                 options: {
                     maintainAspectRatio: false,
+                    responsive: true,
                     plugins: {
                         subtitle: {
                             display: true,
@@ -74,6 +83,28 @@ export class ChartBuilder {
                                 size: 10,
                                 family: 'SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace'
                             }
+                        },
+                        legend: {
+                            labels: {
+                                usePointStyle: true,
+                                filter: (legend: any, data: any) => {
+                                    return data.datasets[legend.datasetIndex].isMean === true;
+                                }
+                            },
+                            onClick: (e: any, legendItem: any, legend: any) => {
+                                // console.log(e, legendItem, legend);
+                                const index = legendItem.datasetIndex;
+                                const ci = legend.chart;
+                                if (ci.isDatasetVisible(index)) {
+                                    ci.hide(index + 1);
+                                    ci.hide(index);
+                                    legendItem.hidden = true;
+                                } else {
+                                    ci.show(index + 1);
+                                    ci.show(index);
+                                    legendItem.hidden = false;
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -81,6 +112,13 @@ export class ChartBuilder {
                             title: {
                                 display: true
                             }
+                        },
+                        y2: {
+                            title: {
+                                display: true
+                            },
+                            position: 'right',
+                            display: 'auto'
                         },
                         x: {
                             title: {
@@ -179,11 +217,14 @@ export class ChartBuilder {
             methodInfo.results.push(result);
         }
 
+        const methodsArray = getMethods();
+
         return {
             categories: getCategories(),
             categoriesTitle: getCategoriesTitle(),
-            methods: getMethods(),
-            unit: inferUnit()
+            methods: methodsArray,
+            unit: inferUnit(),
+            allocationUnit: inferAllocationUnit()
         };
 
         function getCategories() {
@@ -229,6 +270,33 @@ export class ChartBuilder {
             }
         }
 
+        function inferAllocationUnit() {
+            for (const method of methods) {
+                for (const result of method[1].results) {
+                    if (result.allocated === null) {
+                        continue;
+                    }
+
+                    switch (result.allocated.unit) {
+                        case 'B':
+                            return 'Bytes';
+                        case 'KB':
+                            return 'Kilobytes';
+                        case 'MB':
+                            return 'Megabytes';
+                        case 'GB':
+                            return 'Gigabytes';
+                        case 'TB':
+                            return 'Terabytes';
+                        case 'PB':
+                            return 'Petabytes';
+                        default:
+                            return result.allocated.unit;
+                    }
+                }
+            }
+        }
+
         function getMeasure(formattedNumber: string): IMeasure {
             const unitSeparatorIndex = formattedNumber.indexOf(' ');
             const unit = unitSeparatorIndex >= 0 ? formattedNumber.substring(unitSeparatorIndex).trim() : '';
@@ -242,6 +310,7 @@ export class ChartBuilder {
 
     private render() {
         const yAxe = this.chartScales.y;
+        const y2Axe = this.chartScales.y2;
         const xAxe = this.chartScales.x;
         const chartData = this._chart.data;
         const benchmarkResult = this.getBenchmarkResult();
@@ -257,9 +326,12 @@ export class ChartBuilder {
 
         this.chartPlugins.subtitle.color = this._creditTextColor;
 
-        yAxe.title.text = benchmarkResult.unit;
-        yAxe.title.color = this._yAxeTextColor;
+        yAxe.title.text = `Duration in ${benchmarkResult.unit}`;
+        yAxe.title.color = this._yAxisTextColor;
         yAxe.grid.color = this._gridLineColor;
+        // yAxe.stacked = true;
+        // yAxe.bounds='data';
+        //  yAxe.beginAtZero=false;
 
         switch (this.scaleType) {
             case ScaleType.Log10:
@@ -273,8 +345,14 @@ export class ChartBuilder {
                 break;
         }
 
+        y2Axe.title.text = `Allocated Memory in ${benchmarkResult.allocationUnit}`;
+        y2Axe.title.color = this._y2AxisTextColor;
+        y2Axe.ticks.color = this._y2AxisTextColor;
+        y2Axe.grid.color = this._y2AxisGridLineColor;
+        y2Axe.type = yAxe.type;
+
         xAxe.title.text = benchmarkResult.categoriesTitle;
-        xAxe.title.color = this._xAxeTextColor;
+        xAxe.title.color = this._xAxisTextColor;
         xAxe.grid.color = this._gridLineColor;
 
         chartData.labels = benchmarkResult.categories;
@@ -287,35 +365,52 @@ export class ChartBuilder {
         const colors = this._colors;
         let colorIndex = 0;
 
-        const datasets = benchmarkResult.methods
-            .map(m => ({
-                label: m.name,
-                data: getData(m.results, r => r.mean.value),
-                backgroundColor: getNextColor(),
-                order: 1
-            }));
+        const datasets = [];
+        const hasAllocationInfo = benchmarkResult.methods
+            .some(m => m.results.some(r => r.allocated !== null));
 
-        // const r =
-        //     benchmarkResult.methods
-        //     .map(i=> [].concat(...(i.results as any) ))
-        //     .filter(i=>i.results.reduce)
-        //     .map(m => ({
-        //         label: m.name,
-        //         data: getData(m.results, r => r.mean.value),
-        //         backgroundColor: getNextColor()
-        //     }));
+        for (const methodInfo of benchmarkResult.methods) {
+            const color = getNextColor();
 
-        // datasets.push(
-        //     ...benchmarkResult.methods
-        //         .filter(i => i.results.some(i => i.allocated !== null))
-        //         .map(m => ({
-        //             label: m.name,
-        //             data: getData(m.results, r => r.allocated!.value),
-        //             backgroundColor: getNextColor(),
-        //             // type: 'line',
-        //             order: 0
-        //         }))
-        // );
+            const meanDataset = {
+                label: methodInfo.name,
+                data: getData(methodInfo.results, r => r.mean.value),
+                backgroundColor: color,
+                stack: methodInfo.name,
+                // grouped: false
+                yAxisID: 'y',
+                // borderColor: this._gridLineColor,
+                // borderWidth: 1,
+                order: 2,
+                pointStyle: 'rect',
+                isMean: true
+            };
+
+            datasets.push(meanDataset);
+
+            if (hasAllocationInfo) {
+                // const color2 = Chart.helpers.color(color).darken(0.25);
+                // const color2 = Chart.helpers.color(this._y2AxisTextColor).clearer(0.5);
+                const allocationDataset = {
+                    label: `${methodInfo.name} - Allocation`,
+                    data: getData(methodInfo.results, r => r.allocated === null ? 0 : r.allocated!.value),
+                    backgroundColor: this._y2AxisBarColor,//.clearer(0.5).hexString(),
+                    stack: methodInfo.name,
+                    // grouped: false
+                    yAxisID: 'y2',
+                    // borderColor: this._y2AxisTextColor,//Chart.helpers.color('#B230F8').clearer(0.5).hexString(),//Chart.helpers.color(color2).darken(0.5).hexString(),
+                    // borderWidth: 2,
+                    // borderRadius: 3,
+                    barPercentage: 0.1,
+                    order: 1,
+                    // pointStyle: 'rectRounded',
+                    isAllocation: true
+                    // lineDash: [10, 5]
+                };
+
+                datasets.push(allocationDataset);
+            }
+        }
 
         chartData.datasets = datasets;
 
