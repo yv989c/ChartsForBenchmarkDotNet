@@ -1,7 +1,7 @@
 declare var Chart: any;
 
 import { Log2Axis } from "./log-2-axis";
-import { ChartBuilder, Theme, ScaleType } from "./chart-builder";
+import { ChartBuilder, Theme, ScaleType, DisplayMode } from "./chart-builder";
 
 class App {
     constructor() {
@@ -15,6 +15,14 @@ class App {
         this.bindResultsInput(builder);
         this.bindSizeControls(chartWrapper);
 
+        document.getElementById('scaleRadioContainer')!.addEventListener('input', e => {
+            builder.scaleType = (e.target as HTMLInputElement).value as ScaleType;
+        });
+
+        document.getElementById('displayRadioContainer')!.addEventListener('input', e => {
+            builder.displayMode = (e.target as HTMLInputElement).value as DisplayMode;
+        });
+
         document.getElementById('themeRadioContainer')!.addEventListener('input', e => {
             builder.theme = (e.target as HTMLInputElement).value as Theme;
             switch (builder.theme) {
@@ -25,10 +33,6 @@ class App {
                     chartWrapper.classList.add('bg-light');
                     break;
             }
-        });
-
-        document.getElementById('scaleRadioContainer')!.addEventListener('input', e => {
-            builder.scaleType = (e.target as HTMLInputElement).value as ScaleType;
         });
 
         document.getElementById('copyToClipboardButton')!.addEventListener('click', e => {

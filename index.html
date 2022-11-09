@@ -51,34 +51,47 @@
                     <div class="row">
                         <div class="col text-center">
                             <h1>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="align-text-bottom" viewBox="0 0 512 512">
-                                    <path
-                                        d="M32 32c17.7 0 32 14.3 32 32V400c0 8.8 7.2 16 16 16H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H80c-44.2 0-80-35.8-80-80V64C0 46.3 14.3 32 32 32zM160 224c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32s-32-14.3-32-32V256c0-17.7 14.3-32 32-32zm128-64V320c0 17.7-14.3 32-32 32s-32-14.3-32-32V160c0-17.7 14.3-32 32-32s32 14.3 32 32zm64 32c17.7 0 32 14.3 32 32v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V224c0-17.7 14.3-32 32-32zM480 96V320c0 17.7-14.3 32-32 32s-32-14.3-32-32V96c0-17.7 14.3-32 32-32s32 14.3 32 32z" />
-                                </svg>
-                                <br class="d-sm-none">
-                                <span>Charts for BenchmarkDotNet</span>
+                                <a href="/" class="text-decoration-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="align-text-bottom"
+                                        viewBox="0 0 512 512">
+                                        <path
+                                            d="M32 32c17.7 0 32 14.3 32 32V400c0 8.8 7.2 16 16 16H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H80c-44.2 0-80-35.8-80-80V64C0 46.3 14.3 32 32 32zM160 224c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32s-32-14.3-32-32V256c0-17.7 14.3-32 32-32zm128-64V320c0 17.7-14.3 32-32 32s-32-14.3-32-32V160c0-17.7 14.3-32 32-32s32 14.3 32 32zm64 32c17.7 0 32 14.3 32 32v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V224c0-17.7 14.3-32 32-32zM480 96V320c0 17.7-14.3 32-32 32s-32-14.3-32-32V96c0-17.7 14.3-32 32-32s32 14.3 32 32z" />
+                                    </svg>
+                                    <br class="d-sm-none">
+                                    <span>Charts for BenchmarkDotNet</span>
+                                </a>
                             </h1>
                             <p class="lead">Paste your console results below:</p>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col">
-                            <textarea id="resultsInput" rows="10" class="w-100 font-monospace"
-                                autocomplete="off" spellcheck="false">
-|          Method |  Runtime | NumberOfValues |        Mean |     Error |    StdDev | Allocated |
-|---------------- |--------- |--------------- |------------:|----------:|----------:|----------:|
-|  **Int32ValuesXml** | **.NET 5.0** |            **128** |  **1,829.6 μs** |  **81.87 μs** |  **54.15 μs** | **114.63 KB** |
-| Int32ValuesJson | .NET 5.0 |            128 |    898.0 μs |  88.93 μs |  58.82 μs | 112.38 KB |
-|  Int32ValuesXml | .NET 6.0 |            128 |  1,864.2 μs | 186.75 μs | 123.52 μs | 114.69 KB |
-| Int32ValuesJson | .NET 6.0 |            128 |  1,047.4 μs | 125.46 μs |  82.98 μs | 114.13 KB |
-|  **Int32ValuesXml** | **.NET 5.0** |            **512** |  **5,174.0 μs** | **294.64 μs** | **194.88 μs** | **128.56 KB** |
-| Int32ValuesJson | .NET 5.0 |            512 |  1,289.8 μs | 251.38 μs | 166.28 μs | 119.78 KB |
-|  Int32ValuesXml | .NET 6.0 |            512 |  5,090.9 μs | 339.77 μs | 224.74 μs | 129.94 KB |
-| Int32ValuesJson | .NET 6.0 |            512 |  1,182.0 μs | 176.50 μs | 116.74 μs | 121.58 KB |
-|  **Int32ValuesXml** | **.NET 5.0** |           **2048** | **15,266.8 μs** | **373.36 μs** | **246.95 μs** | **179.37 KB** |
-| Int32ValuesJson | .NET 5.0 |           2048 |  2,634.3 μs | 383.80 μs | 253.86 μs | 155.36 KB |
-|  Int32ValuesXml | .NET 6.0 |           2048 | 15,278.6 μs | 359.64 μs | 237.88 μs | 178.74 KB |
-| Int32ValuesJson | .NET 6.0 |           2048 |  2,221.8 μs | 314.54 μs | 208.05 μs | 156.11 KB |                                
+                            <textarea id="resultsInput" rows="10" class="w-100 font-monospace" autocomplete="off"
+                                spellcheck="false">
+BenchmarkDotNet=v0.13.2, OS=Windows 11 (10.0.22621.674)
+AMD Ryzen 9 6900HS Creator Edition, 1 CPU, 16 logical and 8 physical cores
+.NET SDK=6.0.401
+    [Host]     : .NET 5.0.17 (5.0.1722.21314), X64 RyuJIT AVX2
+    Job-DMBNZL : .NET 5.0.17 (5.0.1722.21314), X64 RyuJIT AVX2
+    Job-LVVPJF : .NET 6.0.9 (6.0.922.41905), X64 RyuJIT AVX2
+
+Server=True  InvocationCount=32  IterationCount=10
+RunStrategy=Monitoring  WarmupCount=1
+
+|          Method |  Runtime | NumberOfValues |       Mean |       Error |    StdDev | Allocated |
+|---------------- |--------- |--------------- |-----------:|------------:|----------:|----------:|
+|  Int32ValuesXml | .NET 5.0 |             64 | 1,296.3 us |    88.44 us |  58.50 us | 113.63 KB |
+| Int32ValuesJson | .NET 5.0 |             64 |   760.2 us |   140.28 us |  92.79 us | 112.23 KB |
+|  Int32ValuesXml | .NET 6.0 |             64 | 1,301.8 us |   263.00 us | 173.96 us | 112.81 KB |
+| Int32ValuesJson | .NET 6.0 |             64 |   767.9 us |   159.57 us | 105.55 us | 111.65 KB |
+|  Int32ValuesXml | .NET 5.0 |            256 | 2,762.4 us |   295.13 us | 195.21 us | 118.75 KB |
+| Int32ValuesJson | .NET 5.0 |            256 |   876.7 us |    85.14 us |  56.31 us | 116.51 KB |
+|  Int32ValuesXml | .NET 6.0 |            256 | 2,668.7 us |   182.09 us | 120.44 us | 118.62 KB |
+| Int32ValuesJson | .NET 6.0 |            256 |   848.2 us |    28.09 us |  18.58 us | 116.09 KB |
+|  Int32ValuesXml | .NET 5.0 |           1024 | 8,440.8 us | 1,488.93 us | 984.84 us | 146.55 KB |
+| Int32ValuesJson | .NET 5.0 |           1024 | 1,285.0 us |   185.82 us | 122.91 us | 132.95 KB |
+|  Int32ValuesXml | .NET 6.0 |           1024 | 8,262.4 us |   325.18 us | 215.09 us | 144.92 KB |
+| Int32ValuesJson | .NET 6.0 |           1024 | 1,287.0 us |   193.03 us | 127.68 us | 133.89 KB |
                             </textarea>
                             <p class="text-center">
                                 <small class="text-muted">(This information does not leave your browser.)</small>
@@ -87,7 +100,7 @@
                     </div>
                     <form autocomplete="off">
                         <div class="row">
-                            <div class="col-12 col-xl-12 col-xxl-7 mb-2">
+                            <div class="col-12 col-xl-12 col-xxl-4 mb-2">
                                 <label class="form-label" for="widthRangeInput">Size</label>
                                 <div class="d-flex justify-content-between">
                                     <div class="input-group input-group-sm me-2">
@@ -104,45 +117,71 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-6 col-xl-6 col-xxl-3">
-                                <label class="form-label">Scale Mode</label>
+                            <div class="col-4 col-xl-4 col-xxl-3">
+                                <label class="form-label">Display</label>
+                                <div id="displayRadioContainer">
+                                    <div class="form-check form-check-inline d-block d-xl-inline-block">
+                                        <input class="form-check-input" type="radio" name="displayRadio"
+                                            id="allDisplayRadio" value="All" checked>
+                                        <label class="form-check-label" for="allDisplayRadio">
+                                            All
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline d-block d-xl-inline-block">
+                                        <input class="form-check-input" type="radio" name="displayRadio"
+                                            id="durationDisplayRadio" value="Duration">
+                                        <label class="form-check-label" for="durationDisplayRadio">
+                                            Duration
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline d-block d-xl-inline-block me-0">
+                                        <input class="form-check-input" type="radio" name="displayRadio"
+                                            id="allocationDisplayRadio" value="Allocation">
+                                        <label class="form-check-label" for="allocationDisplayRadio">
+                                            Allocation
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-4 col-xl-4 col-xxl-3">
+                                <label class="form-label">Scale</label>
                                 <div id="scaleRadioContainer">
-                                    <div class="form-check form-check-inline">
+                                    <div class="form-check form-check-inline d-block d-xl-inline-block">
                                         <input class="form-check-input" type="radio" name="scaleRadio"
-                                            id="linearScaleRadio" value="linear" checked>
+                                            id="linearScaleRadio" value="Linear">
                                         <label class="form-check-label" for="linearScaleRadio">
                                             Linear
                                         </label>
                                     </div>
-                                    <div class="form-check form-check-inline">
+                                    <div class="form-check form-check-inline d-block d-xl-inline-block">
                                         <input class="form-check-input" type="radio" name="scaleRadio"
-                                            id="log10ScaleRadio" value="log10">
+                                            id="log10ScaleRadio" value="Log10">
                                         <label class="form-check-label" for="log10ScaleRadio">
                                             Log10
                                         </label>
                                     </div>
-                                    <div class="form-check form-check-inline me-0">
+                                    <div class="form-check form-check-inline d-block d-xl-inline-block me-0">
                                         <input class="form-check-input" type="radio" name="scaleRadio"
-                                            id="log2ScaleRadio" value="log2">
+                                            id="log2ScaleRadio" value="Log2" checked>
                                         <label class="form-check-label" for="log2ScaleRadio">
                                             Log2
                                         </label>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-6 col-xl-6 col-xxl-2">
+                            <div class="col-4 col-xl-4 col-xxl-2">
                                 <label class="form-label">Theme</label>
                                 <div id="themeRadioContainer">
-                                    <div class="form-check form-check-inline">
+                                    <div class="form-check form-check-inline d-block d-xl-inline-block">
                                         <input class="form-check-input" type="radio" name="themeRadio"
-                                            id="darkThemeRadio" value="dark" checked>
+                                            id="darkThemeRadio" value="Dark" checked>
                                         <label class="form-check-label" for="darkThemeRadio">
                                             Dark
                                         </label>
                                     </div>
-                                    <div class="form-check form-check-inline me-0">
+                                    <div class="form-check form-check-inline d-block d-xl-inline-block me-0">
                                         <input class="form-check-input" type="radio" name="themeRadio"
-                                            id="lightThemeRadio" value="light">
+                                            id="lightThemeRadio" value="Light">
                                         <label class="form-check-label" for="lightThemeRadio">
                                             Light
                                         </label>
