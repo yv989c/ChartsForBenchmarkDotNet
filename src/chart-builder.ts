@@ -12,11 +12,21 @@ export class ChartBuilder {
 
     private _benchmarkResultRows: IBenchmarkResultRow[] = [];
     private _theme = Theme.Dark;
-    private _yAxeTextColor = '#606060';
-    private _xAxeTextColor = '#606060';
+    private _yAxisTextColor = '#606060';
+
+    private _y2AxisBaseColor = '#A600FF';
+    private _y2AxisGridLineColor = this._y2AxisBaseColor;
+    private _y2AxisTextColor = this._y2AxisBaseColor;
+    private _y2AxisBarColor = Chart.helpers.color(this._y2AxisBaseColor).clearer(0.3).hexString();
+
+    private _xAxisTextColor = '#606060';
     private _gridLineColor = '';
     private _creditTextColor = '';
-    private _scaleType = ScaleType.Linear;
+    private _scaleType = ScaleType.Log2;
+
+    private _displayMode = DisplayMode.All;
+
+    private _hasAllocationData = false;
 
     get theme() {
         return this._theme;
@@ -26,10 +36,12 @@ export class ChartBuilder {
             case Theme.Dark:
                 this._creditTextColor = '#66666675';
                 this._gridLineColor = '#66666638';
+                this._y2AxisGridLineColor = Chart.helpers.color(this._y2AxisBaseColor).clearer(0.5).hexString();
                 break;
             case Theme.Light:
                 this._creditTextColor = '#00000040';
                 this._gridLineColor = '#0000001a';
+                this._y2AxisGridLineColor = Chart.helpers.color(this._y2AxisBaseColor).clearer(0.75).hexString();
                 break;
             default:
                 break;
@@ -46,6 +58,18 @@ export class ChartBuilder {
         this.render();
     }
 
+    get displayMode() {
+        return this._displayMode;
+    }
+    set displayMode(value) {
+        this._displayMode = value;
+        this.render();
+    }
+
+    get hasAllocationData() {
+        return this._hasAllocationData && (this.displayMode === DisplayMode.All || this.displayMode === DisplayMode.Allocation);
+    }
+
     private get chartPlugins() {
         return this._chart.config.options.plugins;
     }
@@ -57,12 +81,16 @@ export class ChartBuilder {
     constructor(canvas: HTMLCanvasElement) {
         this._chart = getChart();
         this.theme = this.theme;
+        const that = this;
 
         function getChart() {
+            const numberFormat = new Intl.NumberFormat('en-US', { style: 'decimal' });
+
             const config = {
                 type: 'bar',
                 options: {
                     maintainAspectRatio: false,
+                    responsive: true,
                     plugins: {
                         subtitle: {
                             display: true,
@@ -74,18 +102,80 @@ export class ChartBuilder {
                                 size: 10,
                                 family: 'SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace'
                             }
+                        },
+                        legend: {
+                            labels: {
+                                usePointStyle: true,
+                                filter: (legend: any, data: any) => {
+                                    const display =
+                                        (that.displayMode === DisplayMode.Allocation && that.hasAllocationData) ||
+                                        data.datasets[legend.datasetIndex].isDuration === true;
+
+                                    return display;
+                                }
+                            },
+                            onClick: (e: any, legendItem: any, legend: any) => {
+                                const index = legendItem.datasetIndex;
+                                const ci = legend.chart;
+                                const hideAllocation = that.displayMode === DisplayMode.All && that.hasAllocationData;
+
+                                if (ci.isDatasetVisible(index)) {
+                                    if (hideAllocation) {
+                                        ci.hide(index + 1);
+                                    }
+                                    ci.hide(index);
+                                    legendItem.hidden = true;
+                                } else {
+                                    if (hideAllocation) {
+                                        ci.show(index + 1);
+                                    }
+                                    ci.show(index);
+                                    legendItem.hidden = false;
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context: any) => {
+                                    const dataset = context.dataset as IDataset;
+
+                                    let label = dataset.label || '';
+
+                                    if (dataset.isDuration) {
+                                        label += ' - Duration: ';
+                                    }
+                                    else if (dataset.isAllocation) {
+                                        label += ' - Memory Allocation: ';
+                                    }
+
+                                    if (context.parsed.y !== null) {
+                                        label += `${numberFormat.format(context.parsed.y)} ${dataset.unitInfo.short}`;
+                                    }
+
+                                    return label;
+                                }
+                            }
                         }
                     },
                     scales: {
                         y: {
                             title: {
                                 display: true
-                            }
+                            },
+                            display: 'auto'
+                        },
+                        y2: {
+                            title: {
+                                display: true
+                            },
+                            position: 'right',
+                            display: 'auto'
                         },
                         x: {
                             title: {
                                 display: true
-                            }
+                            },
+                            display: 'auto'
                         }
                     }
                 }
@@ -122,11 +212,18 @@ export class ChartBuilder {
 
         const headerRow = rows[0];
         const methodIndex = headerRow.columns.indexOf('Method');
-        const runtimeIndex = headerRow.columns.indexOf('Runtime');
         const meanIndex = headerRow.columns.lastIndexOf('Mean');
+
+        if (methodIndex < 0 || meanIndex < 0) {
+            return null;
+        }
+
+        const runtimeIndex = headerRow.columns.indexOf('Runtime');
 
         const categoryIndexStart = Math.max(methodIndex, runtimeIndex) + 1;
         const categoryIndexEnd = meanIndex - 1;
+
+        const allocatedIndex = headerRow.columns.indexOf('Allocated', meanIndex);
 
         const methods = new Map<string, IMethodInfo>();
         const orderByMethod = new Map<string, number>();
@@ -160,33 +257,38 @@ export class ChartBuilder {
                 methodInfo = {
                     name: methodName,
                     order: methodOrder,
-                    values: []
+                    results: []
                 };
 
                 methods.set(methodName, methodInfo);
             }
 
-            const valueAndScale = getValueAndScale(row.columns[meanIndex]);
+            const durationMean = getMeasure(row.columns[meanIndex]);
 
-            methodInfo.values.push({
+            const result: IMethodResult = {
                 category: category,
-                value: valueAndScale.value,
-                scale: valueAndScale.scale
-            });
+                duration: durationMean,
+                allocation: allocatedIndex >= 0 ? getMeasure(row.columns[allocatedIndex]) : null
+            };
+
+            methodInfo.results.push(result);
         }
+
+        const methodsArray = getMethods();
 
         return {
             categories: getCategories(),
             categoriesTitle: getCategoriesTitle(),
-            methods: getMethods(),
-            scale: inferScale()
+            methods: methodsArray,
+            durationUnit: inferDurationUnit(),
+            allocationUnit: inferAllocationUnit()
         };
 
         function getCategories() {
             const categories = new Set<string>();
             for (const method of methods) {
-                for (const value of method[1].values) {
-                    categories.add(value.category);
+                for (const result of method[1].results) {
+                    categories.add(result.category);
                 }
             }
             return [...categories];
@@ -207,54 +309,121 @@ export class ChartBuilder {
                 .sort((a, b) => a.order - b.order);
         }
 
-        function inferScale() {
+        function inferDurationUnit() {
+            const info: IUnitInfo = {
+                short: '',
+                long: ''
+            };
+
             for (const method of methods) {
-                for (const value of method[1].values) {
-                    switch (value.scale) {
+                for (const result of method[1].results) {
+                    info.short = result.duration.unit;
+
+                    switch (result.duration.unit) {
                         case 'us':
                         case 'μs':
-                            return 'Microseconds';
+                            info.long = 'Microseconds';
+                            break;
                         case 'ms':
-                            return 'Milliseconds';
+                            info.long = 'Milliseconds';
+                            break;
                         case 's':
-                            return 'Seconds';
+                            info.long = 'Seconds';
+                            break;
                         default:
-                            return value.scale;
+                            info.long = result.duration.unit;
+                            break;
                     }
+
+                    return info;
                 }
             }
+
+            return info;
         }
 
-        function getValueAndScale(formattedNumber: string) {
-            const scaleSeparatorIndex = formattedNumber.indexOf(' ');
-            const scale = scaleSeparatorIndex >= 0 ? formattedNumber.substring(scaleSeparatorIndex).trim() : '';
+        function inferAllocationUnit() {
+            const info: IUnitInfo = {
+                short: '',
+                long: ''
+            };
+
+            for (const method of methods) {
+                for (const result of method[1].results) {
+                    if (result.allocation === null) {
+                        continue;
+                    }
+
+                    info.short = result.allocation.unit;
+
+                    switch (result.allocation.unit) {
+                        case 'B':
+                            info.long = 'Bytes';
+                            break;
+                        case 'KB':
+                            info.long = 'Kilobytes';
+                            break;
+                        case 'MB':
+                            info.long = 'Megabytes';
+                            break;
+                        case 'GB':
+                            info.long = 'Gigabytes';
+                            break;
+                        case 'TB':
+                            info.long = 'Terabytes';
+                            break;
+                        case 'PB':
+                            info.long = 'Petabytes';
+                            break;
+                        default:
+                            info.long = result.allocation.unit;
+                            break;
+                    }
+
+                    return info;
+                }
+            }
+
+            return info;
+        }
+
+        function getMeasure(formattedNumber: string): IMeasure {
+            const unitSeparatorIndex = formattedNumber.indexOf(' ');
+            const unit = unitSeparatorIndex >= 0 ? formattedNumber.substring(unitSeparatorIndex).trim() : '';
             const value = parseFloat(formattedNumber.replace(/[^0-9.]/g, ''));
             return {
                 value,
-                scale
+                unit
             }
         }
     }
 
     private render() {
         const yAxe = this.chartScales.y;
+        const y2Axe = this.chartScales.y2;
         const xAxe = this.chartScales.x;
         const chartData = this._chart.data;
         const benchmarkResult = this.getBenchmarkResult();
 
+        yAxe.title.text = '';
+        y2Axe.title.text = '';
+        xAxe.title.text = '';
+        chartData.labels.length = 0;
+        chartData.datasets.length = 0;
+        this._hasAllocationData = false;
+
         if (benchmarkResult === null) {
-            yAxe.title.text = '';
-            xAxe.title.text = '';
-            chartData.labels = [];
-            chartData.datasets = [];
             this._chart.update();
             return;
         }
 
+        this._hasAllocationData = benchmarkResult.methods
+            .some(m => m.results.some(r => r.allocation !== null));
+
         this.chartPlugins.subtitle.color = this._creditTextColor;
 
-        yAxe.title.text = benchmarkResult.scale;
-        yAxe.title.color = this._yAxeTextColor;
+        yAxe.title.text = `Duration (${benchmarkResult.durationUnit.long})`;
+        yAxe.title.color = this._yAxisTextColor;
         yAxe.grid.color = this._gridLineColor;
 
         switch (this.scaleType) {
@@ -269,9 +438,24 @@ export class ChartBuilder {
                 break;
         }
 
+        y2Axe.title.text = `Memory Allocation (${benchmarkResult.allocationUnit.long})`;
+        y2Axe.title.color = this._y2AxisTextColor;
+        y2Axe.ticks.color = this._y2AxisTextColor;
+        y2Axe.grid.color = this._y2AxisGridLineColor;
+        y2Axe.type = yAxe.type;
+
         xAxe.title.text = benchmarkResult.categoriesTitle;
-        xAxe.title.color = this._xAxeTextColor;
+        xAxe.title.color = this._xAxisTextColor;
         xAxe.grid.color = this._gridLineColor;
+
+        if (this.displayMode === DisplayMode.Allocation) {
+            if (!this.hasAllocationData) {
+                this._chart.update();
+                return;
+            }
+
+            yAxe.title.text = y2Axe.title.text;
+        }
 
         chartData.labels = benchmarkResult.categories;
 
@@ -283,19 +467,60 @@ export class ChartBuilder {
         const colors = this._colors;
         let colorIndex = 0;
 
-        chartData.datasets = benchmarkResult.methods
-            .map(m => ({
-                label: m.name,
-                data: getData(m.values),
-                backgroundColor: getNextColor()
-            }));
+        const datasets = [];
 
-        function getData(values: IMethodValue[]) {
+        for (const methodInfo of benchmarkResult.methods) {
+            const color = getNextColor();
+
+            if (this.displayMode === DisplayMode.All || this.displayMode === DisplayMode.Duration) {
+                const durationDataset = {
+                    isDuration: true,
+                    label: methodInfo.name,
+                    data: getData(methodInfo.results, r => r.duration.value),
+                    backgroundColor: color,
+                    stack: methodInfo.name,
+                    yAxisID: 'y',
+                    unitInfo: benchmarkResult.durationUnit,
+                    order: 2,
+                    barPercentage: 0.9,
+                    pointStyle: 'rect'
+                };
+
+                datasets.push(durationDataset);
+            }
+
+            if (this.hasAllocationData && (this.displayMode === DisplayMode.All || this.displayMode === DisplayMode.Allocation)) {
+                const allocationDataset = {
+                    isAllocation: true,
+                    label: methodInfo.name,
+                    data: getData(methodInfo.results, r => r.allocation === null ? 0 : r.allocation.value),
+                    backgroundColor: this._y2AxisBarColor,
+                    stack: methodInfo.name,
+                    yAxisID: 'y2',
+                    unitInfo: benchmarkResult.allocationUnit,
+                    order: 1,
+                    barPercentage: 0.2,
+                    pointStyle: 'rect'
+                };
+
+                if (this.displayMode === DisplayMode.Allocation) {
+                    allocationDataset.backgroundColor = color;
+                    allocationDataset.yAxisID = 'y';
+                    allocationDataset.barPercentage = 0.9;
+                }
+
+                datasets.push(allocationDataset);
+            }
+        }
+
+        chartData.datasets = datasets;
+
+        function getData(results: IMethodResult[], getResultCallback: (r: IMethodResult) => number) {
             const data: number[] = new Array(indexByCategory.size);
-            for (const value of values) {
-                const index = indexByCategory.get(value.category);
+            for (const result of results) {
+                const index = indexByCategory.get(result.category);
                 if (index !== undefined) {
-                    data[index] = value.value;
+                    data[index] = getResultCallback(result);
                 }
             }
             return data;
@@ -317,25 +542,48 @@ interface IBenchmarkResultRow {
     columns: string[]
 }
 
-interface IMethodValue {
-    category: string,
+interface IMeasure {
     value: number,
-    scale: string
+    unit: string
+}
+
+interface IMethodResult {
+    category: string,
+    duration: IMeasure,
+    allocation: IMeasure | null
 }
 
 interface IMethodInfo {
     name: string;
     order: number;
-    values: IMethodValue[];
+    results: IMethodResult[];
+}
+
+interface IUnitInfo {
+    short: string,
+    long: string
+}
+
+interface IDataset {
+    label: string,
+    isDuration?: boolean,
+    isAllocation?: boolean,
+    unitInfo: IUnitInfo
 }
 
 export enum Theme {
-    Dark = 'dark',
-    Light = 'light'
+    Dark = 'Dark',
+    Light = 'Light'
 }
 
 export enum ScaleType {
-    Linear = 'linear',
-    Log10 = 'log10',
-    Log2 = 'log2'
+    Linear = 'Linear',
+    Log10 = 'Log10',
+    Log2 = 'Log2'
+}
+
+export enum DisplayMode {
+    All = 'All',
+    Duration = 'Duration',
+    Allocation = 'Allocation'
 }
