@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 /**
  * @license almond 0.3.3 Copyright jQuery Foundation and other contributors.
  * Released under MIT license, http://github.com/requirejs/almond/LICENSE
@@ -917,27 +926,23 @@ define("app", ["require", "exports", "log-2-axis", "chart-builder"], function (r
         constructor() {
             Chart.register(log_2_axis_1.Log2Axis);
             Chart.defaults.font.family = 'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"';
-            const chartWrapper = document.getElementById('chartWrapper');
+            this._chartWrapper = document.getElementById('chartWrapper');
             const chartCanvas = document.getElementById('chartCanvas');
-            const builder = new chart_builder_1.ChartBuilder(chartCanvas);
-            this.bindResultsInput(builder);
-            this.bindSizeControls(chartWrapper);
-            document.getElementById('scaleRadioContainer').addEventListener('input', e => {
-                builder.scaleType = e.target.value;
+            this._builder = new chart_builder_1.ChartBuilder(chartCanvas);
+            this._resultsInput = document.getElementById('resultsInput');
+            this._displayRadioContainer = document.getElementById('displayRadioContainer');
+            this._scaleRadioContainer = document.getElementById('scaleRadioContainer');
+            this._themeRadioContainer = document.getElementById('themeRadioContainer');
+            this.bindSizeControls(this._chartWrapper);
+            this._scaleRadioContainer.addEventListener('input', e => {
+                this._builder.scaleType = e.target.value;
             });
-            document.getElementById('displayRadioContainer').addEventListener('input', e => {
-                builder.displayMode = e.target.value;
+            this._displayRadioContainer.addEventListener('input', e => {
+                this._builder.displayMode = e.target.value;
             });
-            document.getElementById('themeRadioContainer').addEventListener('input', e => {
-                builder.theme = e.target.value;
-                switch (builder.theme) {
-                    case chart_builder_1.Theme.Dark:
-                        chartWrapper.classList.remove('bg-light');
-                        break;
-                    case chart_builder_1.Theme.Light:
-                        chartWrapper.classList.add('bg-light');
-                        break;
-                }
+            this._themeRadioContainer.addEventListener('input', e => {
+                this._builder.theme = e.target.value;
+                this.refreshChartContainer();
             });
             document.getElementById('copyToClipboardButton').addEventListener('click', e => {
                 chartCanvas.toBlob(blob => {
@@ -951,6 +956,9 @@ define("app", ["require", "exports", "log-2-axis", "chart-builder"], function (r
                 link.href = chartCanvas.toDataURL();
                 link.click();
             });
+            document.getElementById('shareButton').addEventListener('click', e => {
+                this.shareAsUrl();
+            });
             document.addEventListener('readystatechange', () => {
                 if (document.readyState === 'complete') {
                     // Fixes MBC Widget Google Pay bug.
@@ -960,12 +968,17 @@ define("app", ["require", "exports", "log-2-axis", "chart-builder"], function (r
                     }
                 }
             });
+            this.bindResultsInput(this._builder);
         }
         bindResultsInput(builder) {
-            const resultsInput = document.getElementById('resultsInput');
+            const resultsInput = this._resultsInput;
             resultsInput.addEventListener('input', () => {
                 loadBenchmarkResult();
             });
+            if (this.tryRestoreFromSharedUrl()) {
+                loadBenchmarkResult();
+                return;
+            }
             resultsInput.addEventListener('click', () => {
                 resultsInput.value = '';
                 loadBenchmarkResult();
@@ -995,6 +1008,69 @@ define("app", ["require", "exports", "log-2-axis", "chart-builder"], function (r
                 heightRangeInput.title = `${value * 100}%`;
                 chartWrapper.style.height = `${value * 1600}px`;
             }
+        }
+        refreshChartContainer() {
+            switch (this._builder.theme) {
+                case chart_builder_1.Theme.Dark:
+                    this._chartWrapper.classList.remove('bg-light');
+                    break;
+                case chart_builder_1.Theme.Light:
+                    this._chartWrapper.classList.add('bg-light');
+                    break;
+            }
+        }
+        getValue(container) {
+            return container.querySelector('input:checked').value;
+        }
+        setValue(container, value) {
+            return container.querySelector(`input[value="${value}"]`).checked = true;
+        }
+        shareAsUrl() {
+            return __awaiter(this, void 0, void 0, function* () {
+                const data = {
+                    results: this._resultsInput.value,
+                    settings: {
+                        display: this.getValue(this._displayRadioContainer),
+                        scale: this.getValue(this._scaleRadioContainer),
+                        theme: this.getValue(this._themeRadioContainer)
+                    }
+                };
+                const serializedData = encodeURIComponent(JSON.stringify(data));
+                const url = `${window.location.origin}#shared=${serializedData}`;
+                try {
+                    yield navigator.clipboard.writeText(url);
+                    alert('A shareable URL was copied to your clipboard!');
+                }
+                catch (err) {
+                    prompt('Copy the following URL for sharing:', url);
+                }
+            });
+        }
+        tryRestoreFromSharedUrl() {
+            try {
+                if (window.location.hash.length < 2) {
+                    return;
+                }
+                const urlParams = new URLSearchParams(window.location.hash.substring(1));
+                const sharedEncodedData = urlParams.get('shared');
+                if (sharedEncodedData) {
+                    const sharedData = JSON.parse(sharedEncodedData);
+                    this._resultsInput.value = sharedData.results;
+                    this.setValue(this._displayRadioContainer, sharedData.settings.display);
+                    this.setValue(this._scaleRadioContainer, sharedData.settings.scale);
+                    this.setValue(this._themeRadioContainer, sharedData.settings.theme);
+                    this._builder.displayMode = this.getValue(this._displayRadioContainer);
+                    this._builder.scaleType = this.getValue(this._scaleRadioContainer);
+                    this._builder.theme = this.getValue(this._themeRadioContainer);
+                    this.refreshChartContainer();
+                    return true;
+                }
+            }
+            catch (e) {
+                console.log(e);
+                alert('Error while restoring the data from the URL.');
+            }
+            return false;
         }
     }
     new App();
