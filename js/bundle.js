@@ -1028,12 +1028,13 @@ define("app", ["require", "exports", "log-2-axis", "chart-builder"], function (r
         shareAsUrl() {
             return __awaiter(this, void 0, void 0, function* () {
                 const data = {
-                    results: this._resultsInput.value,
+                    v: 1,
                     settings: {
                         display: this.getValue(this._displayRadioContainer),
                         scale: this.getValue(this._scaleRadioContainer),
                         theme: this.getValue(this._themeRadioContainer)
-                    }
+                    },
+                    results: LZString.compressToBase64(this._resultsInput.value)
                 };
                 const serializedData = encodeURIComponent(JSON.stringify(data));
                 const url = `${window.location.origin}#shared=${serializedData}`;
@@ -1055,7 +1056,7 @@ define("app", ["require", "exports", "log-2-axis", "chart-builder"], function (r
                 const sharedEncodedData = urlParams.get('shared');
                 if (sharedEncodedData) {
                     const sharedData = JSON.parse(sharedEncodedData);
-                    this._resultsInput.value = sharedData.results;
+                    this._resultsInput.value = sharedData.v === 1 ? LZString.decompressFromBase64(sharedData.results) : sharedData.results;
                     this.setValue(this._displayRadioContainer, sharedData.settings.display);
                     this.setValue(this._scaleRadioContainer, sharedData.settings.scale);
                     this.setValue(this._themeRadioContainer, sharedData.settings.theme);
