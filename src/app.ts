@@ -1,15 +1,17 @@
 declare var Chart: any;
+declare var LZString: any;
 
 import { Log2Axis } from "./log-2-axis";
 import { ChartBuilder, Theme, ScaleType, DisplayMode } from "./chart-builder";
 
 interface ISharedData {
-    results: string,
+    v?: number,
     settings: {
         display: string,
         scale: string,
         theme: string
-    }
+    },
+    results: string
 }
 
 class App {
@@ -151,12 +153,13 @@ class App {
 
     private async shareAsUrl() {
         const data: ISharedData = {
-            results: this._resultsInput.value,
+            v: 1,
             settings: {
                 display: this.getValue(this._displayRadioContainer),
                 scale: this.getValue(this._scaleRadioContainer),
                 theme: this.getValue(this._themeRadioContainer)
-            }
+            },
+            results: LZString.compressToBase64(this._resultsInput.value)
         };
 
         const serializedData = encodeURIComponent(JSON.stringify(data));
@@ -182,7 +185,7 @@ class App {
             if (sharedEncodedData) {
                 const sharedData = <ISharedData>JSON.parse(sharedEncodedData);
 
-                this._resultsInput.value = sharedData.results;
+                this._resultsInput.value = sharedData.v === 1 ? LZString.decompressFromBase64(sharedData.results) : sharedData.results;
                 this.setValue(this._displayRadioContainer, sharedData.settings.display);
                 this.setValue(this._scaleRadioContainer, sharedData.settings.scale);
                 this.setValue(this._themeRadioContainer, sharedData.settings.theme);
