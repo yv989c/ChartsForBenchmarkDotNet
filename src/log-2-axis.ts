@@ -1,25 +1,28 @@
-declare var Chart: any;
-var Scale = Chart.Scale, LinearScale = Chart.LinearScale;
+import { Scale, LinearScale } from "chart.js";
 
 /**
  * https://www.chartjs.org/docs/master/samples/advanced/derived-axis-type.html#log2-axis-implementation
  */
 export class Log2Axis extends Scale {
+    static id = 'log2';
+    static defaults = {};
+
+    _startValue: number = 0;
+    _valueRange: number = 0;
+    
     constructor(cfg: any) {
         super(cfg);
-        this._startValue = undefined;
-        this._valueRange = 0;
     }
 
     parse(raw: unknown, index: number) {
-        const value = LinearScale.prototype.parse.apply(this, [raw, index]);
+        const value = <any>LinearScale.prototype.parse.apply(this, [raw, index]);
         return isFinite(value) && value > 0 ? value : null;
     }
 
     determineDataLimits() {
         const { min, max } = this.getMinMax(true);
-        this.min = isFinite(min) ? Math.max(0, min) : null;
-        this.max = isFinite(max) ? Math.max(0, max) : null;
+        this.min = <any>(isFinite(min) ? Math.max(0, min) : null);
+        this.max = <any>(isFinite(max) ? Math.max(0, max) : null);
     }
 
     buildTicks() {
@@ -61,5 +64,5 @@ export class Log2Axis extends Scale {
     }
 }
 
-Log2Axis.id = 'log2';
+Log2Axis.id = "log2";
 Log2Axis.defaults = {};
