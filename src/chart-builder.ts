@@ -1,4 +1,4 @@
-import Chart from "chart.js/auto";
+import { Chart } from "chart.js";
 import { color } from "chart.js/helpers";
 
 export class ChartBuilder {

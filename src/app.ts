@@ -1,4 +1,4 @@
-import Chart from "chart.js/auto";
+import { Tooltip, BarController, BarElement, CategoryScale, Chart, LinearScale } from "chart.js";
 import { Log2Axis } from "./log-2-axis";
 import { ChartBuilder, Theme, ScaleType, DisplayMode } from "./chart-builder";
 import LZString from "lz-string";
@@ -22,7 +22,7 @@ export class App {
     _themeRadioContainer: HTMLElement;
 
     constructor() {
-        Chart.register(<any>Log2Axis);
+        Chart.register(Tooltip, LinearScale, CategoryScale, BarController, BarElement, Log2Axis);
         Chart.defaults.font.family = 'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"';
 
         this._chartWrapper = document.getElementById('chartWrapper')!;
