@@ -1,14 +1,10 @@
 # Charts for BenchmarkDotNet
 
-A simple web app that charts your [BenchmarkDotNet](https://benchmarkdotnet.org/) console results. The chart can then be copied to your clipboard or downloaded as a PNG image.
+This [web app][ChartsForBenchmarkDotNet] allows you to create a visual representation of your [BenchmarkDotNet] console results. You can conveniently copy the generated chart to your clipboard, save it as a PNG image, or share it through a URL.
 
-It currently understands standard results like the one shown below. Any columns between `Method`/`Runtime` and `Mean` are considered categories in the chart across the x-axis. These columns are typically created via properties decorated with the `Params` attribute in your benchmark.
+It currently understands standard results like the one shown below. Any columns between `Method`/`Runtime` and `Mean` are considered categories in the chart across the x-axis. These columns are typically created via properties decorated with the [`Params`](https://benchmarkdotnet.org/articles/features/parameterization.html) attribute in your benchmark.
 
-
-## How do I use it?
-Just `copy` the output of your console containing the results and `paste` it in [the app](https://chartbenchmark.net/). The chart will be automatically generated.
-
-Console Output Example:
+**Console Results**
 ```ini
 BenchmarkDotNet=v0.13.2, OS=Windows 11 (10.0.22621.674)
 AMD Ryzen 9 6900HS Creator Edition, 1 CPU, 16 logical and 8 physical cores
@@ -39,9 +35,13 @@ IterationCount=10  RunStrategy=Monitoring  WarmupCount=1
 | Int32ValuesJson |           4096 |  2,732.6 us | 259.02 us | 171.33 us |
 ```
 
-> 💡 You can also paste the content of the `.md` file created after running your benchmarks. It's typically stored in the following project directory: `bin\Release\[Runtime]\BenchmarkDotNet.Artifacts\results`
+**Generated Chart**
+![Generated Chart](/docs/images/chart.png)
 
-There are a few controls above the chart that allows you customize the size, theme, and the y-axe scale. 
+## How do I use it?
+Just paste your [BenchmarkDotNet] console results into [the app][ChartsForBenchmarkDotNet]. The chart will be automatically generated. A few controls are provided above the chart, allowing you to customize the size, metric to display, y-axis scale, and theme.
+
+> 💡 You can also paste the content of the `.md` file created after running your benchmarks. It's typically stored in the following project directory: `bin\Release\[Runtime]\BenchmarkDotNet.Artifacts\results` 
 
 ## Your Support is Appreciated!
 If you feel that this solution has provided you some value, please consider [buying me a ☕][BuyMeACoffee].
@@ -51,6 +51,8 @@ If you feel that this solution has provided you some value, please consider [buy
 Your ⭐ on [this repository][Repository] also helps! Thanks! 🖖🙂
 
 
+[ChartsForBenchmarkDotNet]: https://chartbenchmark.net/
+[BenchmarkDotNet]: https://benchmarkdotnet.org/
 [Repository]: https://github.com/yv989c/ChartsForBenchmarkDotNet
 [BuyMeACoffee]: https://www.buymeacoffee.com/yv989c
-[BuyMeACoffeeButton]: /images/bmc-48.svg
+[BuyMeACoffeeButton]: /docs/images/bmc-48.svg
