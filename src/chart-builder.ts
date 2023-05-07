@@ -1,4 +1,5 @@
-declare var Chart: any;
+import { Chart } from "chart.js";
+import { color } from "chart.js/helpers";
 
 export class ChartBuilder {
     private readonly _chart: any;
@@ -17,7 +18,7 @@ export class ChartBuilder {
     private _y2AxisBaseColor = '#A600FF';
     private _y2AxisGridLineColor = this._y2AxisBaseColor;
     private _y2AxisTextColor = this._y2AxisBaseColor;
-    private _y2AxisBarColor = Chart.helpers.color(this._y2AxisBaseColor).clearer(0.3).hexString();
+    private _y2AxisBarColor = color(this._y2AxisBaseColor).clearer(0.3).hexString();
 
     private _xAxisTextColor = '#606060';
     private _gridLineColor = '';
@@ -36,12 +37,12 @@ export class ChartBuilder {
             case Theme.Dark:
                 this._creditTextColor = '#66666675';
                 this._gridLineColor = '#66666638';
-                this._y2AxisGridLineColor = Chart.helpers.color(this._y2AxisBaseColor).clearer(0.5).hexString();
+                this._y2AxisGridLineColor = color(this._y2AxisBaseColor).clearer(0.5).hexString();
                 break;
             case Theme.Light:
                 this._creditTextColor = '#00000040';
                 this._gridLineColor = '#0000001a';
-                this._y2AxisGridLineColor = Chart.helpers.color(this._y2AxisBaseColor).clearer(0.75).hexString();
+                this._y2AxisGridLineColor = color(this._y2AxisBaseColor).clearer(0.75).hexString();
                 break;
             default:
                 break;
@@ -114,7 +115,7 @@ export class ChartBuilder {
                                     return display;
                                 }
                             },
-                            onClick: (e: any, legendItem: any, legend: any) => {
+                            onClick: (_: any, legendItem: any, legend: any) => {
                                 const index = legendItem.datasetIndex;
                                 const ci = legend.chart;
                                 const hideAllocation = that.displayMode === DisplayMode.All && that.hasAllocationData;
@@ -181,7 +182,7 @@ export class ChartBuilder {
                 }
             };
 
-            return new Chart(canvas.getContext('2d'), config);
+            return new Chart(<any>canvas.getContext('2d'), <any>config);
         }
     }
 
@@ -190,7 +191,7 @@ export class ChartBuilder {
             .split('\n')
             .map(i => i.trim())
             .filter(i => i.length > 2 && i.startsWith('|') && i.endsWith('|'))
-            .filter((i, index) => index !== 1)
+            .filter((_, index) => index !== 1)
             .map(i => ({
                 text: i,
                 columns: i

@@ -1,8 +1,7 @@
-declare var Chart: any;
-declare var LZString: any;
-
+import { Legend, SubTitle, Tooltip, LinearScale, LogarithmicScale, BarController, BarElement, CategoryScale, Chart } from "chart.js";
 import { Log2Axis } from "./log-2-axis";
 import { ChartBuilder, Theme, ScaleType, DisplayMode } from "./chart-builder";
+import LZString from "lz-string";
 
 interface ISharedData {
     v?: number,
@@ -14,7 +13,7 @@ interface ISharedData {
     results: string
 }
 
-class App {
+export class App {
     _chartWrapper: HTMLElement;
     _builder: ChartBuilder;
     _resultsInput: HTMLInputElement;
@@ -23,7 +22,7 @@ class App {
     _themeRadioContainer: HTMLElement;
 
     constructor() {
-        Chart.register(Log2Axis);
+        Chart.register(Legend, SubTitle, Tooltip, LinearScale, LogarithmicScale, CategoryScale, BarController, BarElement, Log2Axis);
         Chart.defaults.font.family = 'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"';
 
         this._chartWrapper = document.getElementById('chartWrapper')!;
@@ -50,21 +49,21 @@ class App {
             this.refreshChartContainer();
         });
 
-        document.getElementById('copyToClipboardButton')!.addEventListener('click', e => {
+        document.getElementById('copyToClipboardButton')!.addEventListener('click', () => {
             chartCanvas.toBlob(blob => {
                 const item = new ClipboardItem({ 'image/png': blob! });
                 navigator.clipboard.write([item]);
             });
         });
 
-        document.getElementById('downloadButton')!.addEventListener('click', e => {
+        document.getElementById('downloadButton')!.addEventListener('click', () => {
             var link = document.createElement('a');
             link.download = 'chart.png';
             link.href = chartCanvas.toDataURL();
             link.click();
         });
 
-        document.getElementById('shareButton')!.addEventListener('click', e => {
+        document.getElementById('shareButton')!.addEventListener('click', () => {
             this.shareAsUrl();
         });
 
@@ -206,4 +205,3 @@ class App {
     }
 }
 
-new App();
