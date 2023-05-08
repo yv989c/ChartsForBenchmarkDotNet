@@ -42,8 +42,6 @@
         }
     </style>
     <script defer type="module" src="/src/main.ts"></script>
-    <script defer src='https://static.cloudflareinsights.com/beacon.min.js'
-        data-cf-beacon='{"token": "767ff100230840c1802e2bc54c5453e9"}'></script>
 </head>
 
 <body class="mt-3 mb-5">
@@ -73,7 +71,7 @@
                         <div class="col">
                             <p class="lead text-center">Paste your console results below:</p>
                             <textarea id="resultsInput" rows="10" class="w-100 font-monospace" autocomplete="off"
-                                spellcheck="false">
+                                spellcheck="false" aria-label="Your BenchmarkDotNet console results">
 BenchmarkDotNet=v0.13.2, OS=Windows 11 (10.0.22621.674)
 AMD Ryzen 9 6900HS Creator Edition, 1 CPU, 16 logical and 8 physical cores
 .NET SDK=6.0.401
@@ -242,10 +240,13 @@ RunStrategy=Monitoring  WarmupCount=1
         </footer>
     </div>
 
-    <script async data-name="BMC-Widget" data-cfasync="false"
+    <script defer data-name="BMC-Widget" data-cfasync="false"
         src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="yv989c"
         data-description="Support me on Buy me a coffee!" data-message="" data-color="#FF5F5F" data-position="Right"
         data-x_margin="18" data-y_margin="18"></script>
+
+    <script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "767ff100230840c1802e2bc54c5453e9"}'></script>
 
 </body>
 
