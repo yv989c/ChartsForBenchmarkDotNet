@@ -14,7 +14,10 @@ interface ISharedData {
 }
 
 export class App {
+    private static readonly DefaultFileName = 'chart.png';
+
     _chartWrapper: HTMLElement;
+    _chartCanvas: HTMLCanvasElement;
     _builder: ChartBuilder;
     _resultsInput: HTMLInputElement;
     _displayRadioContainer: HTMLElement;
@@ -26,8 +29,8 @@ export class App {
         Chart.defaults.font.family = 'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"';
 
         this._chartWrapper = document.getElementById('chartWrapper')!;
-        const chartCanvas = document.getElementById('chartCanvas') as HTMLCanvasElement;
-        this._builder = new ChartBuilder(chartCanvas);
+        this._chartCanvas = document.getElementById('chartCanvas') as HTMLCanvasElement;
+        this._builder = new ChartBuilder(this._chartCanvas);
 
         this._resultsInput = document.getElementById('resultsInput') as HTMLInputElement;
         this._displayRadioContainer = document.getElementById('displayRadioContainer') as HTMLElement;
@@ -58,13 +61,23 @@ export class App {
 
         document.getElementById('downloadButton')!.addEventListener('click', () => {
             var link = document.createElement('a');
-            link.download = 'chart.png';
-            link.href = chartCanvas.toDataURL();
+            link.download = App.DefaultFileName;
+            link.href = this._chartCanvas.toDataURL();
             link.click();
         });
 
-        document.getElementById('shareButton')!.addEventListener('click', () => {
-            this.shareAsUrl();
+        document.getElementById('shareButtonContainer')!.addEventListener('click', async (event) => {
+            event.preventDefault();
+
+            const target = event.target as HTMLAnchorElement;
+            switch (target.dataset.action) {
+                case 'shareAsUrl':
+                    await this.shareAsUrl();
+                    break;
+                case 'shareAsImage':
+                    await this.shareAsImage();
+                    break;
+            }
         });
 
         document.addEventListener('readystatechange', () => {
@@ -150,6 +163,29 @@ export class App {
         return (<HTMLInputElement>container.querySelector(`input[value="${value}"]`)).checked = true;
     }
 
+    private async share(data: any) {
+        const canShare =
+            typeof (navigator.canShare) === 'function' &&
+            navigator.canShare(data);
+
+        if (canShare) {
+            try {
+                await navigator.share(data);
+                return true;
+            } catch (error) {
+                if (error instanceof Error && error.name === 'AbortError') {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private showUnsupportedMessage() {
+        alert('This feature is not supported by your browser. 😞');
+    }
+
     private async shareAsUrl() {
         const data: ISharedData = {
             v: 1,
@@ -165,11 +201,29 @@ export class App {
         const url = `${window.location.origin}#shared=${serializedData}`;
 
         try {
+            if (!await this.share({ url: url })) {
             await navigator.clipboard.writeText(url);
             alert('A shareable URL was copied to your clipboard!')
-        } catch (err) {
+            }
+        } catch (error) {
+            console.error(error);
             prompt('Copy the following URL for sharing:', url);
         }
+    }
+
+    private async shareAsImage() {
+        this._chartCanvas.toBlob(async blob => {
+            try {
+                const file = new File([<any>blob], App.DefaultFileName, { type: 'image/png' });
+                const data = { files: [file] };
+                if (!await this.share(data)) {
+                    this.showUnsupportedMessage();
+                }
+            } catch (error) {
+                console.error(error);
+                this.showUnsupportedMessage();
+            }
+        });
     }
 
     private tryRestoreFromSharedUrl() {
@@ -196,8 +250,8 @@ export class App {
 
                 return true;
             }
-        } catch (e) {
-            console.log(e);
+        } catch (error) {
+            console.error(error);
             alert('Error while restoring the data from the URL.');
         }
 
