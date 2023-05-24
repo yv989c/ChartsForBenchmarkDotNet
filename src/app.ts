@@ -53,9 +53,10 @@ export class App {
         });
 
         document.getElementById('copyToClipboardButton')!.addEventListener('click', () => {
-            chartCanvas.toBlob(blob => {
+            this._chartCanvas.toBlob(async blob => {
                 const item = new ClipboardItem({ 'image/png': blob! });
-                navigator.clipboard.write([item]);
+                await navigator.clipboard.write([item]);
+                alert('An image was copied to your clipboard!')
             });
         });
 
@@ -202,8 +203,8 @@ export class App {
 
         try {
             if (!await this.share({ url: url })) {
-            await navigator.clipboard.writeText(url);
-            alert('A shareable URL was copied to your clipboard!')
+                await navigator.clipboard.writeText(url);
+                alert('A shareable URL was copied to your clipboard!')
             }
         } catch (error) {
             console.error(error);
