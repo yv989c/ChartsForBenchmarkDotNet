@@ -100,7 +100,7 @@ export class ChartBuilder {
                             align: 'center',
                             fullSize: false,
                             font: {
-                                size: 10,
+                                size: 11,
                                 family: 'SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace'
                             }
                         },

@@ -16,9 +16,10 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png">
     <link rel="mask-icon" href="/images/icons/safari-pinned-tab.svg" color="#f94144">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.2.2/slate/bootstrap.min.css"
-        integrity="sha512-1pL5JraDFnKQpIwmTl0kunghVQj0wSv82iT4zHeP32BpkJuvLAgR5kAhGbwXUmAzYOtVyDfzhpbwk5vIK+uIhQ=="
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.2.3/slate/bootstrap.min.css"
+        integrity="sha512-GixPbJydZH3yyD23SgcC/i/FIhLb+0F26ABBvEg9ejj90hYuXXjPphWTWTX5dIuolObna6iXz1nr5nog6Dex7w=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <style>
         textarea {
             white-space: pre;
@@ -41,6 +42,11 @@
             fill: #f94144;
         }
     </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.3/js/bootstrap.bundle.min.js"
+        integrity="sha512-i9cEfJwUwViEPFKdC1enz4ZRGBj8YQo6QByFTF92YXHi7waCqyexvRD75S5NVTsSiTv7rKWqG9Y5eFxmRsOn0A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
     <script defer type="module" src="/src/main.ts"></script>
 </head>
 
@@ -200,27 +206,34 @@ RunStrategy=Monitoring  WarmupCount=1
                     </div>
                     <hr>
                     <div class="text-center">
-                        <button id="copyToClipboardButton" class="btn btn-primary mb-2">
+                        <button id="copyToClipboardButton" type="button" class="btn btn-primary mb-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 512 512">
                                 <path
                                     d="M224 0c-35.3 0-64 28.7-64 64V288c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64H224zM64 160c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H288c35.3 0 64-28.7 64-64V384H288v64H64V224h64V160H64z" />
                             </svg>
                             <span>Copy</span>
                         </button>
-                        <button id="downloadButton" class="btn btn-primary mb-2">
+                        <button id="downloadButton" type="button" class="btn btn-primary mb-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 512 512">
                                 <path
                                     d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64zM432 456c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z" />
                             </svg>
                             <span>Download</span>
                         </button>
-                        <button id="shareButton" class="btn btn-primary mb-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 448 512">
-                                <path
-                                    d="M352 224c53 0 96-43 96-96s-43-96-96-96s-96 43-96 96c0 4 .2 8 .7 11.9l-94.1 47C145.4 170.2 121.9 160 96 160c-53 0-96 43-96 96s43 96 96 96c25.9 0 49.4-10.2 66.6-26.9l94.1 47c-.5 3.9-.7 7.8-.7 11.9c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-25.9 0-49.4 10.2-66.6 26.9l-94.1-47c.5-3.9 .7-7.8 .7-11.9s-.2-8-.7-11.9l94.1-47C302.6 213.8 326.1 224 352 224z" />
-                            </svg>
-                            <span>Share</span>
-                        </button>
+                        <div id="shareButtonContainer" class="btn-group mb-2">
+                            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 448 512">
+                                    <path
+                                        d="M352 224c53 0 96-43 96-96s-43-96-96-96s-96 43-96 96c0 4 .2 8 .7 11.9l-94.1 47C145.4 170.2 121.9 160 96 160c-53 0-96 43-96 96s43 96 96 96c25.9 0 49.4-10.2 66.6-26.9l94.1 47c-.5 3.9-.7 7.8-.7 11.9c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-25.9 0-49.4 10.2-66.6 26.9l-94.1-47c.5-3.9 .7-7.8 .7-11.9s-.2-8-.7-11.9l94.1-47C302.6 213.8 326.1 224 352 224z" />
+                                </svg>
+                                <span>Share</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" data-action="shareAsUrl" href="#">As URL</a></li>
+                                <li><a class="dropdown-item" data-action="shareAsImage" href="#">As Image</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
