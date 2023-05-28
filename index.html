@@ -41,6 +41,18 @@
             height: 3rem;
             fill: #f94144;
         }
+
+        .btn-primary:not([disabled]):not(.disabled):focus {
+            background-image: linear-gradient(#52565a, #3a3f44 60%, #353a3f);
+        }
+
+        .btn-check:checked+.btn,
+        :not(.btn-check)+.btn:active,
+        .btn:first-child:active,
+        .btn.active,
+        .btn.show {
+            background-image: linear-gradient(#25282c, #292c30 40%, #2b2f32) !important;
+        }
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.3/js/bootstrap.bundle.min.js"
@@ -206,7 +218,7 @@ RunStrategy=Monitoring  WarmupCount=1
                     </div>
                     <hr>
                     <div class="text-center">
-                        <button id="copyToClipboardButton" type="button" class="btn btn-primary mb-2">
+                        <button id="copyToClipboardButton" type="button" class="btn btn-primary mb-2" data-feedback-text="✌️">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 512 512">
                                 <path
                                     d="M224 0c-35.3 0-64 28.7-64 64V288c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64H224zM64 160c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H288c35.3 0 64-28.7 64-64V384H288v64H64V224h64V160H64z" />
@@ -230,8 +242,8 @@ RunStrategy=Monitoring  WarmupCount=1
                                 <span>Share</span>
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" data-action="shareAsUrl" href="#">As URL</a></li>
-                                <li><a class="dropdown-item" data-action="shareAsImage" href="#">As Image</a></li>
+                                <li><a class="dropdown-item" data-action="shareAsUrl" href="#">Link</a></li>
+                                <li><a class="dropdown-item" data-action="shareAsImage" href="#">Chart image</a></li>
                             </ul>
                         </div>
                     </div>

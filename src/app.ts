@@ -52,13 +52,7 @@ export class App {
             this.refreshChartContainer();
         });
 
-        document.getElementById('copyToClipboardButton')!.addEventListener('click', () => {
-            this._chartCanvas.toBlob(async blob => {
-                const item = new ClipboardItem({ 'image/png': blob! });
-                await navigator.clipboard.write([item]);
-                alert('An image was copied to your clipboard!')
-            });
-        });
+        this.bindCopyToClipboardButton();
 
         document.getElementById('downloadButton')!.addEventListener('click', () => {
             var link = document.createElement('a');
@@ -92,6 +86,27 @@ export class App {
         });
 
         this.bindResultsInput(this._builder);
+    }
+
+    private bindCopyToClipboardButton() {
+        const copyToClipboardButton = document.getElementById('copyToClipboardButton')!;
+        const span = copyToClipboardButton.querySelector('span')!;
+        const defaultText = span.innerText;
+        const feedbackText = copyToClipboardButton.dataset.feedbackText!;
+
+        let setTimeoutId = 0;
+
+        copyToClipboardButton.addEventListener('click', () => {
+            clearTimeout(setTimeoutId);
+            this._chartCanvas.toBlob(async blob => {
+                const item = new ClipboardItem({ 'image/png': blob! });
+                await navigator.clipboard.write([item]);
+                span.innerText = feedbackText;
+                setTimeoutId = setTimeout(() => {
+                    span.innerText = defaultText;
+                }, 1000);
+            });
+        });
     }
 
     private bindResultsInput(builder: ChartBuilder) {
