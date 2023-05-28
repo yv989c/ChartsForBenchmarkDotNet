@@ -41,6 +41,18 @@
             height: 3rem;
             fill: #f94144;
         }
+
+        .btn-primary:not([disabled]):not(.disabled):focus {
+            background-image: linear-gradient(#52565a, #3a3f44 60%, #353a3f);
+        }
+
+        .btn-check:checked+.btn,
+        :not(.btn-check)+.btn:active,
+        .btn:first-child:active,
+        .btn.active,
+        .btn.show {
+            background-image: linear-gradient(#25282c, #292c30 40%, #2b2f32) !important;
+        }
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.3/js/bootstrap.bundle.min.js"
