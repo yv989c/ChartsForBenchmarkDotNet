@@ -3,13 +3,84 @@ import { color } from "chart.js/helpers";
 
 export class ChartBuilder {
     private readonly _chart: any;
-    /*
-    https://coolors.co/palette/f94144-f3722c-f8961e-f9c74f-90be6d-43aa8b-4d908e-577590
-    https://coolors.co/palette/ff595e-ff924c-ffca3a-c5ca30-8ac926-36949d-1982c4-4267ac-565aa0-6a4c93
-    https://coolors.co/palette/264653-287271-2a9d8f-8ab17d-babb74-e9c46a-efb366-f4a261-ee8959-e76f51
-    https://coolors.co/palette/264653-287271-2a9d8f-8ab17d-e9c46a-f4a261-ee8959-e76f51
-    */
-    private readonly _colors = ['#F94144', '#F3722C', '#F8961E', '#F9C74F', '#90BE6D', '#43AA8B', '#4D908E', '#577590'];
+
+    static readonly palettes: IPalette[] = [
+        {
+            id: 'default',
+            title: 'Default',
+            colors: ['#F94144', '#F3722C', '#F8961E', '#F9C74F', '#90BE6D', '#43AA8B', '#4D908E', '#577590']
+        },
+        {
+            id: 'warm',
+            title: 'Warm',
+            colors: ['#264653', '#287271', '#2A9D8F', '#8AB17D', '#E9C46A', '#F4A261', '#EE8959', '#E76F51']
+        },
+        // Colorblind-friendly palettes
+        {
+            id: 'colorblind-safe',
+            title: 'Colorblind Safe',
+            colors: ['#4477AA', '#66CCEE', '#228833', '#CCBB44', '#EE6677', '#AA3377', '#BBBBBB', '#000000']
+        },
+        {
+            id: 'deuteranopia',
+            title: 'Deuteranopia Friendly',
+            colors: ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#66A61E', '#E6AB02', '#A6761D', '#666666']
+        },
+        {
+            id: 'high-contrast',
+            title: 'High Contrast',
+            colors: ['#0173B2', '#DE8F05', '#029E73', '#CC78BC', '#CA9161', '#FBAFE4', '#949494', '#ECE133']
+        },
+        {
+            id: 'colorblind-print',
+            title: 'Colorblind Print',
+            colors: ['#4053D3', '#DDB310', '#B51D14', '#00BEFF', '#FB49B0', '#00B25D', '#CACACA', '#000000']
+        },
+        // Primary color-based palettes
+        {
+            id: 'blue-theme',
+            title: 'Blue Theme',
+            colors: ['#0D47A1', '#1976D2', '#2196F3', '#42A5F5', '#64B5F6', '#90CAF9', '#BBDEFB', '#E3F2FD']
+        },
+        {
+            id: 'red-theme',
+            title: 'Red Theme',
+            colors: ['#B71C1C', '#D32F2F', '#F44336', '#E57373', '#EF5350', '#FF6F60', '#FF8A80', '#FFCDD2']
+        },
+        {
+            id: 'green-theme',
+            title: 'Green Theme',
+            colors: ['#1B5E20', '#388E3C', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', '#C8E6C9', '#E8F5E9']
+        },
+        {
+            id: 'purple-theme',
+            title: 'Purple Theme',
+            colors: ['#4A148C', '#6A1B9A', '#8E24AA', '#AB47BC', '#BA68C8', '#CE93D8', '#E1BEE7', '#F3E5F5']
+        },
+        {
+            id: 'orange-theme',
+            title: 'Orange Theme',
+            colors: ['#E65100', '#F57C00', '#FF9800', '#FFA726', '#FFB74D', '#FFCC80', '#FFE0B2', '#FFF3E0']
+        },
+        {
+            id: 'teal-theme',
+            title: 'Teal Theme',
+            colors: ['#004D40', '#00695C', '#00897B', '#26A69A', '#4DB6AC', '#80CBC4', '#B2DFDB', '#E0F2F1']
+        },
+        {
+            id: 'amber-theme',
+            title: 'Amber Theme',
+            colors: ['#FF6F00', '#FF8F00', '#FFA000', '#FFB300', '#FFC107', '#FFCA28', '#FFD54F', '#FFECB3']
+        },
+        {
+            id: 'indigo-theme',
+            title: 'Indigo Theme',
+            colors: ['#1A237E', '#283593', '#3F51B5', '#5C6BC0', '#7986CB', '#9FA8DA', '#C5CAE9', '#E8EAF6']
+        }
+    ];
+
+    private _colors = ChartBuilder.palettes[0].colors;
+    private _paletteId = ChartBuilder.palettes[0].id;
 
     private _benchmarkResultRows: IBenchmarkResultRow[] = [];
     private _theme = Theme.Dark;
@@ -69,6 +140,18 @@ export class ChartBuilder {
 
     get hasAllocationData() {
         return this._hasAllocationData && (this.displayMode === DisplayMode.All || this.displayMode === DisplayMode.Allocation);
+    }
+
+    get palette() {
+        return this._paletteId;
+    }
+    set palette(value) {
+        const palette = ChartBuilder.palettes.find(p => p.id === value);
+        if (palette) {
+            this._paletteId = value;
+            this._colors = palette.colors;
+            this.render();
+        }
     }
 
     private get chartPlugins() {
@@ -570,6 +653,12 @@ interface IDataset {
     isDuration?: boolean,
     isAllocation?: boolean,
     unitInfo: IUnitInfo
+}
+
+export interface IPalette {
+    id: string,
+    title: string,
+    colors: string[]
 }
 
 export enum Theme {

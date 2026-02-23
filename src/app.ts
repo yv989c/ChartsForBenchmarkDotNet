@@ -8,7 +8,8 @@ interface ISharedData {
     settings: {
         display: string,
         scale: string,
-        theme: string
+        theme: string,
+        palette?: string
     },
     results: string
 }
@@ -23,6 +24,7 @@ export class App {
     _displayRadioContainer: HTMLElement;
     _scaleRadioContainer: HTMLElement;
     _themeRadioContainer: HTMLElement;
+    _paletteSelectContainer: HTMLElement;
 
     constructor() {
         Chart.register(Legend, SubTitle, Tooltip, LinearScale, LogarithmicScale, CategoryScale, BarController, BarElement, Log2Axis);
@@ -36,6 +38,9 @@ export class App {
         this._displayRadioContainer = document.getElementById('displayRadioContainer') as HTMLElement;
         this._scaleRadioContainer = document.getElementById('scaleRadioContainer') as HTMLElement;
         this._themeRadioContainer = document.getElementById('themeRadioContainer') as HTMLElement;
+        this._paletteSelectContainer = document.getElementById('paletteSelectContainer') as HTMLElement;
+
+        this.populatePaletteSelect();
 
         this.bindSizeControls(this._chartWrapper);
 
@@ -50,6 +55,10 @@ export class App {
         this._themeRadioContainer.addEventListener('input', e => {
             this._builder.theme = (e.target as HTMLInputElement).value as Theme;
             this.refreshChartContainer();
+        });
+
+        this._paletteSelectContainer.addEventListener('input', e => {
+            this._builder.palette = (e.target as HTMLSelectElement).value;
         });
 
         this.bindCopyToClipboardButton();
@@ -86,6 +95,21 @@ export class App {
         });
 
         this.bindResultsInput(this._builder);
+    }
+
+    private populatePaletteSelect() {
+        const select = this._paletteSelectContainer.querySelector('select') as HTMLSelectElement;
+        select.innerHTML = '';
+        
+        for (const palette of ChartBuilder.palettes) {
+            const option = document.createElement('option');
+            option.value = palette.id;
+            option.textContent = palette.title;
+            select.appendChild(option);
+        }
+        
+        // Set default value
+        select.value = this._builder.palette;
     }
 
     private bindCopyToClipboardButton() {
@@ -172,11 +196,27 @@ export class App {
     }
 
     private getValue(container: HTMLElement) {
-        return (<HTMLInputElement>container.querySelector('input:checked')).value;
+        const radioInput = container.querySelector('input:checked') as HTMLInputElement;
+        if (radioInput) {
+            return radioInput.value;
+        }
+        const selectInput = container.querySelector('select') as HTMLSelectElement;
+        if (selectInput) {
+            return selectInput.value;
+        }
+        return '';
     }
 
     private setValue(container: HTMLElement, value: string) {
-        return (<HTMLInputElement>container.querySelector(`input[value="${value}"]`)).checked = true;
+        const radioInput = container.querySelector(`input[value="${value}"]`) as HTMLInputElement;
+        if (radioInput) {
+            radioInput.checked = true;
+            return;
+        }
+        const selectInput = container.querySelector('select') as HTMLSelectElement;
+        if (selectInput) {
+            selectInput.value = value;
+        }
     }
 
     private async share(data: any) {
@@ -208,7 +248,8 @@ export class App {
             settings: {
                 display: this.getValue(this._displayRadioContainer),
                 scale: this.getValue(this._scaleRadioContainer),
-                theme: this.getValue(this._themeRadioContainer)
+                theme: this.getValue(this._themeRadioContainer),
+                palette: this.getValue(this._paletteSelectContainer)
             },
             results: LZString.compressToBase64(this._resultsInput.value)
         };
@@ -258,10 +299,16 @@ export class App {
                 this.setValue(this._displayRadioContainer, sharedData.settings.display);
                 this.setValue(this._scaleRadioContainer, sharedData.settings.scale);
                 this.setValue(this._themeRadioContainer, sharedData.settings.theme);
+                if (sharedData.settings.palette) {
+                    this.setValue(this._paletteSelectContainer, sharedData.settings.palette);
+                }
 
                 this._builder.displayMode = <DisplayMode>this.getValue(this._displayRadioContainer);
                 this._builder.scaleType = <ScaleType>this.getValue(this._scaleRadioContainer);
                 this._builder.theme = <Theme>this.getValue(this._themeRadioContainer);
+                if (sharedData.settings.palette) {
+                    this._builder.palette = this.getValue(this._paletteSelectContainer);
+                }
                 this.refreshChartContainer();
 
                 return true;
