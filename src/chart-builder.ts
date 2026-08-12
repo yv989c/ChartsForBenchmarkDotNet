@@ -228,6 +228,9 @@ export class ChartBuilder {
                                     if (dataset.isDuration) {
                                         label += ' - Duration: ';
                                     }
+                                    else if (dataset.isStdDev) {
+                                        label += ' - StdDev: ';
+                                    }
                                     else if (dataset.isAllocation) {
                                         label += ' - Memory Allocation: ';
                                     }
@@ -303,6 +306,7 @@ export class ChartBuilder {
         }
 
         const runtimeIndex = headerRow.columns.indexOf('Runtime');
+        const stdDevIndex = headerRow.columns.indexOf('StdDev');
 
         const categoryIndexStart = Math.max(methodIndex, runtimeIndex) + 1;
         const categoryIndexEnd = meanIndex - 1;
@@ -348,11 +352,13 @@ export class ChartBuilder {
             }
 
             const durationMean = getMeasure(row.columns[meanIndex]);
+            const stdDev = stdDevIndex >= 0 ? getMeasure(row.columns[stdDevIndex]) : null;
 
             const result: IMethodResult = {
                 category: category,
                 duration: durationMean,
-                allocation: allocatedIndex >= 0 ? getMeasure(row.columns[allocatedIndex]) : null
+                allocation: allocatedIndex >= 0 ? getMeasure(row.columns[allocatedIndex]) : null,
+                stdDev: stdDev
             };
 
             methodInfo.results.push(result);
@@ -571,6 +577,22 @@ export class ChartBuilder {
                 };
 
                 datasets.push(durationDataset);
+
+                if (methodInfo.stdDev) {
+                    const stdDevDataset = {
+                        isStdDev: true,
+                        label: `${methodInfo.name} StdDev`,
+                        data: getData(methodInfo.results, r => r.stdDev?.value ?? 0),
+                        backgroundColor: color + '40',
+                        stack: null,
+                        yAxisID: 'y',
+                        unitInfo: benchmarkResult.durationUnit,
+                        order: 3,
+                        barPercentage: 0.9,
+                        pointStyle: 'rect'
+                    };
+                    datasets.push(stdDevDataset);
+                }
             }
 
             if (this.hasAllocationData && (this.displayMode === DisplayMode.All || this.displayMode === DisplayMode.Allocation)) {
@@ -634,7 +656,8 @@ interface IMeasure {
 interface IMethodResult {
     category: string,
     duration: IMeasure,
-    allocation: IMeasure | null
+    allocation: IMeasure | null,
+    stdDev: IMeasure | null
 }
 
 interface IMethodInfo {
@@ -652,6 +675,7 @@ interface IDataset {
     label: string,
     isDuration?: boolean,
     isAllocation?: boolean,
+    isStdDev?: boolean,
     unitInfo: IUnitInfo
 }
 
